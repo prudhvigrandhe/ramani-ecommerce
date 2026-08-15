@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { CartItem, useCartStore } from "@/store/cart-store";
 
 type Props = {
@@ -9,8 +9,8 @@ type Props = {
 };
 
 export default function CartItemCard({ item }: Props) {
-  const increaseQuantity = useCartStore((state) => state.increaseQuantity);
-  const decreaseQuantity = useCartStore((state) => state.decreaseQuantity);
+//   const increaseQuantity = useCartStore((state) => state.increaseQuantity);
+//   const decreaseQuantity = useCartStore((state) => state.decreaseQuantity);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
 
   return (
@@ -41,44 +41,23 @@ export default function CartItemCard({ item }: Props) {
           </p>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="mt-6 flex items-center justify-between">
 
-          <div className="flex items-center rounded-lg border">
+  <span className="rounded-full bg-[#5B214B]/10 px-4 py-2 text-sm font-medium text-[#5B214B]">
+    1 Piece
+  </span>
 
-            <button
-              onClick={() =>
-                decreaseQuantity(item.id, item.size)
-              }
-              className="p-3"
-            >
-              <Minus className="h-4 w-4" />
-            </button>
+  <button
+    onClick={() =>
+      removeFromCart(item.id, item.size)
+    }
+    className="flex items-center gap-2 text-red-500 transition hover:text-red-700"
+  >
+    <Trash2 className="h-5 w-5" />
+    Remove
+  </button>
 
-            <span className="px-5">
-              {item.quantity}
-            </span>
-
-            <button
-              onClick={() =>
-                increaseQuantity(item.id, item.size)
-              }
-              className="p-3"
-            >
-              <Plus className="h-4 w-4" />
-            </button>
-
-          </div>
-
-          <button
-            onClick={() =>
-              removeFromCart(item.id, item.size)
-            }
-            className="text-red-500"
-          >
-            <Trash2 />
-          </button>
-
-        </div>
+</div>
 
       </div>
 

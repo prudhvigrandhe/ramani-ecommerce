@@ -1,7 +1,17 @@
 import CategorySelect from "./category-select";
-import ImageUpload from "./image-upload";
+import ProductImagesUpload from "./product-images-upload";
 
 import { Product, Category } from "@/lib/types";
+
+const availableSizes = [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL",
+    "XXL",
+    "Free Size",
+  ];
 
 type Props = {
   categories: Category[];
@@ -72,11 +82,103 @@ export default function ProductForm({
         defaultValue={product?.description}
         className="w-full rounded-xl border p-3"
       />
+      {/* Product Specifications */}
+<div className="rounded-xl border p-5">
+  <h3 className="mb-5 text-lg font-semibold">
+    Product Specifications
+  </h3>
 
-      <ImageUpload
-        image={product?.image}
-        imagePath={product?.image_path}
-      />
+  <div className="grid gap-4 md:grid-cols-2">
+    <input
+      name="fabric"
+      placeholder="Fabric (e.g. Pure Cotton)"
+      defaultValue={product?.fabric}
+      className="rounded-xl border p-3"
+    />
+
+    <input
+      name="fit"
+      placeholder="Fit (e.g. Regular Fit)"
+      defaultValue={product?.fit}
+      className="rounded-xl border p-3"
+    />
+
+    <input
+      name="occasion"
+      placeholder="Occasion (e.g. Casual Wear)"
+      defaultValue={product?.occasion}
+      className="rounded-xl border p-3"
+    />
+
+    <input
+      name="sleeve"
+      placeholder="Sleeve (e.g. Full Sleeve)"
+      defaultValue={product?.sleeve}
+      className="rounded-xl border p-3"
+    />
+
+    <input
+      name="wash_care"
+      placeholder="Wash Care (e.g. Machine Wash)"
+      defaultValue={product?.washCare}
+      className="rounded-xl border p-3"
+    />
+
+    <input
+      name="color"
+      placeholder="Color"
+      defaultValue={product?.color}
+      className="rounded-xl border p-3"
+    />
+
+    <input
+      name="pattern"
+      placeholder="Pattern"
+      defaultValue={product?.pattern}
+      className="rounded-xl border p-3"
+    />
+
+    <input
+      name="sku"
+      placeholder="SKU"
+      defaultValue={product?.sku}
+      className="rounded-xl border p-3"
+    />
+  </div>
+</div>
+
+      {/* Available Sizes */}
+<div className="rounded-xl border p-5">
+  <h3 className="mb-4 text-lg font-semibold">
+    Available Sizes
+  </h3>
+
+  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+    {availableSizes.map((size) => (
+      <label
+        key={size}
+        className="flex items-center gap-2"
+      >
+        <input
+          type="checkbox"
+          name="available_sizes"
+          value={size}
+          defaultChecked={
+            product?.availableSizes?.includes(size) ?? false
+          }
+          className="h-4 w-4"
+        />
+
+        <span>{size}</span>
+      </label>
+    ))}
+  </div>
+</div>
+
+<ProductImagesUpload
+  mainImage={product?.image}
+  galleryImages={product?.images}
+/>
 
       {/* Homepage Sections */}
       <div className="rounded-xl border p-5">

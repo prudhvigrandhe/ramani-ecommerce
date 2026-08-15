@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Product } from "@/lib/types";
+import { toast } from "sonner";
 
 export type CartItem = Product & {
   quantity: number;
@@ -18,11 +19,27 @@ type CartStore = {
     size: string
   ) => void;
 
-  removeFromCart: (id: number, size: string) => void;
+  removeFromCart: (
+    id: number,
+    size: string
+  ) => void;
 
-  increaseQuantity: (id: number, size: string) => void;
+  increaseQuantity: (
+    id: number,
+    size: string
+  ) => void;
 
-  decreaseQuantity: (id: number, size: string) => void;
+  decreaseQuantity: (
+    id: number,
+    size: string
+  ) => void;
+
+  removeUnavailableItems: (
+    items: {
+      id: number;
+      size: string;
+    }[]
+  ) => void;
 
   clearCart: () => void;
 
@@ -36,39 +53,68 @@ export const useCartStore = create<CartStore>()(
     (set, get) => ({
       items: [],
 
-      addToCart: (product, quantity, size) => {
+      addToCart: (
+        product,
+        quantity,
+        size
+      ) => {
         const items = [...get().items];
 
         const existing = items.find(
-          (item) => item.id === product.id && item.size === size
+          (item) =>
+            item.id === product.id &&
+            item.size === size
         );
 
         if (existing) {
-          existing.quantity += quantity;
-        } else {
-          items.push({
-            ...product,
-            quantity,
-            size,
-          });
+          toast.error(
+            "Sorry, this size is currently out of stock."
+          );
+          return;
         }
 
+        items.push({
+          ...product,
+          quantity,
+          size,
+        });
+
         set({ items });
+
+        toast.success(
+          "🛍️ Added to your shopping bag."
+        );
       },
 
-      removeFromCart: (id, size) => {
+      removeFromCart: (
+        id,
+        size
+      ) => {
         set({
           items: get().items.filter(
-            (item) => !(item.id === id && item.size === size)
+            (item) =>
+              !(
+                item.id === id &&
+                item.size === size
+              )
           ),
         });
+
+        toast.success(
+          "Removed from your shopping bag."
+        );
       },
 
-      increaseQuantity: (id, size) => {
+      increaseQuantity: (
+        id,
+        size
+      ) => {
         const items = [...get().items];
 
         const item = items.find(
-          (p) => p.id === id && p.size === size
+          (p) =>
+            p.id === id &&
+            p.size === size
         );
 
         if (item) {
@@ -78,11 +124,16 @@ export const useCartStore = create<CartStore>()(
         set({ items });
       },
 
-      decreaseQuantity: (id, size) => {
+      decreaseQuantity: (
+        id,
+        size
+      ) => {
         const items = [...get().items];
 
         const item = items.find(
-          (p) => p.id === id && p.size === size
+          (p) =>
+            p.id === id &&
+            p.size === size
         );
 
         if (!item) return;
@@ -90,9 +141,18 @@ export const useCartStore = create<CartStore>()(
         if (item.quantity === 1) {
           set({
             items: items.filter(
-              (p) => !(p.id === id && p.size === size)
+              (p) =>
+                !(
+                  p.id === id &&
+                  p.size === size
+                )
             ),
           });
+
+          toast.success(
+            "Removed from your shopping bag."
+          );
+
           return;
         }
 
@@ -101,17 +161,37 @@ export const useCartStore = create<CartStore>()(
         set({ items });
       },
 
-      clearCart: () => set({ items: [] }),
+      removeUnavailableItems: (
+        unavailable
+      ) => {
+        set({
+          items: get().items.filter(
+            (cartItem) =>
+              !unavailable.some(
+                (item) =>
+                  item.id === cartItem.id &&
+                  item.size ===
+                    cartItem.size
+              )
+          ),
+        });
+      },
+
+      clearCart: () =>
+        set({ items: [] }),
 
       totalItems: () =>
         get().items.reduce(
-          (total, item) => total + item.quantity,
+          (total, item) =>
+            total + item.quantity,
           0
         ),
 
       totalPrice: () =>
         get().items.reduce(
-          (total, item) => total + item.price * item.quantity,
+          (total, item) =>
+            total +
+            item.price * item.quantity,
           0
         ),
     }),

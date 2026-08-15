@@ -96,27 +96,19 @@ export default function Footer() {
 
             <ul className="space-y-3 text-gray-600">
               <li>
-                <Link href="#" className="hover:text-[#5B214B]">
-                  Contact Us
-                </Link>
+              <Link href="/contact">Contact Us</Link>
               </li>
 
               <li>
-                <Link href="#" className="hover:text-[#5B214B]">
-                  Shipping Policy
-                </Link>
+              <Link href="/shipping-policy">Shipping Policy</Link>
               </li>
 
               <li>
-                <Link href="#" className="hover:text-[#5B214B]">
-                  Returns & Refunds
-                </Link>
+              <Link href="/refund-policy">Refund & Cancellation</Link>
               </li>
 
               <li>
-                <Link href="#" className="hover:text-[#5B214B]">
-                  FAQs
-                </Link>
+              <Link href="/privacy-policy">Privacy Policy</Link>
               </li>
             </ul>
           </div>
@@ -129,27 +121,24 @@ export default function Footer() {
 
             <ul className="space-y-3 text-gray-600">
               <li>
-                <Link href="#" className="hover:text-[#5B214B]">
-                  About Us
-                </Link>
+              <Link href="/about">About Us</Link>
               </li>
 
               <li>
-                <Link href="#" className="hover:text-[#5B214B]">
-                  Privacy Policy
-                </Link>
+              <Link href="/privacy-policy">Privacy Policy</Link>
               </li>
 
               <li>
-                <Link href="#" className="hover:text-[#5B214B]">
-                  Terms & Conditions
-                </Link>
+              <Link href="/terms">Terms & Conditions</Link>
               </li>
 
               <li>
-                <Link href="#" className="hover:text-[#5B214B]">
-                  Careers
-                </Link>
+              <Link
+  href="/contact"
+  className="hover:text-[#5B214B]"
+>
+  Contact Us
+</Link>
               </li>
             </ul>
           </div>

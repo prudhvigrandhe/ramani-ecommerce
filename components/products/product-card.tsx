@@ -1,20 +1,42 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, ShoppingBag, Star, Eye } from "lucide-react";
+import { ShoppingBag, Star, Eye } from "lucide-react";
 import { Product } from "@/lib/types";
+import WishlistButton from "@/components/ui/wishlist-button";
 
 type Props = {
   product: Product;
 };
 
 export default function ProductCard({ product }: Props) {
-    const [liked, setLiked] = useState(false);
   const discount = Math.round(
     ((product.originalPrice - product.price) / product.originalPrice) * 100
   );
+  let badge = null;
+
+if (product.availableSizes.length === 0) {
+  badge = {
+    text: "OUT OF STOCK",
+    className: "bg-red-600 text-white",
+  };
+} else if (product.is_best_seller) {
+  badge = {
+    text: "BEST SELLER",
+    className: "bg-amber-100 text-amber-700 border border-amber-300",
+  };
+} else if (product.is_new_arrival) {
+  badge = {
+    text: "NEW",
+    className: "bg-blue-100 text-blue-700 border border-blue-300",
+  };
+} else if (product.is_trending) {
+  badge = {
+    text: "TRENDING",
+    className: "bg-orange-100 text-orange-700 border border-orange-300",
+  };
+}
 
   return (
     <Link
@@ -39,25 +61,21 @@ export default function ProductCard({ product }: Props) {
 
 </div>
   
-  <button
-  onClick={(e) => {
-    e.preventDefault();
-    setLiked(!liked);
-  }}
-  className="absolute right-2 top-2 rounded-full bg-white p-1.5 shadow transition hover:scale-110 md:right-3 md:top-3 md:p-2"
->
-  <Heart
-    className={`h-5 w-5 transition ${
-      liked
-        ? "fill-red-500 text-red-500"
-        : "text-gray-700"
-    }`}
-  />
-</button>
+<div className="absolute right-2 top-2 md:right-3 md:top-3">
+  <WishlistButton product={product} />
+</div>
   
-          <span className="absolute left-2 top-2 rounded-full bg-[#5B214B] px-2 py-1 text-[10px] font-semibold text-white md:left-3 md:top-3 md:px-3 md:text-xs">
-            {discount}% OFF
-          </span>
+{badge ? (
+  <span
+    className={`absolute left-3 top-3 rounded-full px-3 py-1 text-[11px] font-bold tracking-wide shadow-md ${badge.className}`}
+  >
+    {badge.text}
+  </span>
+) : (
+  <span className="absolute left-2 top-2 rounded-full bg-[#5B214B] px-3 py-1 text-xs font-semibold text-white shadow-lg md:left-3 md:top-3">
+    {discount}% OFF
+  </span>
+)}
         </div>
   
         <div className="space-y-2 p-3 md:p-5">
@@ -88,11 +106,16 @@ export default function ProductCard({ product }: Props) {
             </div>
   
             <button
-              onClick={(e) => e.preventDefault()}
-              className="rounded-full bg-[#5B214B] p-2 text-white transition hover:bg-[#431736] md:p-3"
-            >
-              <ShoppingBag className="h-5 w-5" />
-            </button>
+  disabled={product.availableSizes.length === 0}
+  onClick={(e) => e.preventDefault()}
+  className={`rounded-full p-2 text-white transition md:p-3 ${
+    product.availableSizes.length === 0
+      ? "cursor-not-allowed bg-gray-400"
+      : "bg-[#5B214B] hover:bg-[#431736]"
+  }`}
+>
+  <ShoppingBag className="h-5 w-5" />
+</button>
           </div>
         </div>
       </div>

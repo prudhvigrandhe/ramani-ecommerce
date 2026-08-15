@@ -11,13 +11,22 @@ type SupabaseProduct = {
   rating: number;
 
   image: string;
-  image_path: string |null;
+  images: string[] | null;
 
   stock: boolean | null;
+  available_sizes: string[] | null;
+
+  fabric: string | null;
+  fit: string | null;
+  occasion: string | null;
+  sleeve: string | null;
+  wash_care: string | null;
+  color: string | null;
+  pattern: string | null;
+  sku: string | null;
 
   category_id: number;
 
-  // Homepage Sections
   is_trending: boolean | null;
   is_best_seller: boolean | null;
   is_new_arrival: boolean | null;
@@ -45,11 +54,20 @@ export function mapProduct(product: SupabaseProduct): Product {
     rating: Number(product.rating),
 
     image: product.image,
-    image_path: product.image_path ?? "",
+    images: product.images ?? [],
 
     stock: product.stock ?? true,
+    availableSizes: product.available_sizes ?? [],
 
-    // Homepage Sections
+    fabric: product.fabric ?? "",
+    fit: product.fit ?? "",
+    occasion: product.occasion ?? "",
+    sleeve: product.sleeve ?? "",
+    washCare: product.wash_care ?? "",
+    color: product.color ?? "",
+    pattern: product.pattern ?? "",
+    sku: product.sku ?? "",
+
     is_trending: product.is_trending ?? false,
     is_best_seller: product.is_best_seller ?? false,
     is_new_arrival: product.is_new_arrival ?? false,

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import LogoutButton from "./logout-button";
 
 export default function AdminHeader() {
   return (
@@ -14,13 +15,19 @@ export default function AdminHeader() {
         </h1>
       </div>
 
-      <Link
-        href="/admin/add-product"
-        className="flex items-center gap-2 rounded-xl bg-[#5B214B] px-5 py-3 font-medium text-white transition hover:opacity-90"
-      >
-        <Plus className="h-5 w-5" />
-        Add Product
-      </Link>
+      <div className="flex items-center gap-3">
+
+        <Link
+          href="/admin/add-product"
+          className="flex items-center gap-2 rounded-xl bg-[#5B214B] px-5 py-3 font-medium text-white transition hover:opacity-90"
+        >
+          <Plus className="h-5 w-5" />
+          Add Product
+        </Link>
+
+        <LogoutButton />
+
+      </div>
     </div>
   );
 }

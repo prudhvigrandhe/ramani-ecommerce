@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { updateOrderStatus } from "@/app/admin/orders/actions";
 
 type Props = {
   orderId: number;
@@ -28,21 +28,14 @@ export default function OrderStatusSelect({
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  async function updateStatus() {
+  async function handleSave() {
     if (status === currentStatus) return;
 
     try {
       setLoading(true);
       setMessage("");
 
-      const { error } = await supabase
-        .from("orders")
-        .update({
-          order_status: status,
-        })
-        .eq("id", orderId);
-
-      if (error) throw error;
+      await updateOrderStatus(orderId, status);
 
       setMessage("✅ Order status updated successfully!");
 
@@ -79,7 +72,7 @@ export default function OrderStatusSelect({
         </select>
 
         <button
-          onClick={updateStatus}
+          onClick={handleSave}
           disabled={loading || status === currentStatus}
           className="rounded-lg bg-[#5B214B] px-6 py-2 font-semibold text-white transition hover:bg-[#431736] disabled:cursor-not-allowed disabled:opacity-50"
         >

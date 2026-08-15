@@ -8,8 +8,12 @@ export function useProducts(initialCategory: string = "All") {
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState(initialCategory);
-  const [sort, setSort] = useState("Newest");
+const [category, setCategory] = useState(initialCategory);
+const [sort, setSort] = useState("Newest");
+
+useEffect(() => {
+  setCategory(initialCategory);
+}, [initialCategory]);
 
   useEffect(() => {
     async function fetchProducts() {

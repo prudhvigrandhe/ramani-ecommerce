@@ -1,4 +1,4 @@
-export type Product = {
+export type DemoProduct  = {
     id: number;
     name: string;
     category: string;
@@ -8,7 +8,7 @@ export type Product = {
     image: string;
     badge: string;
   };
-export const products: Product[] = [
+  export const products: DemoProduct[] = [
     {
       id: 1,
       name: "Floral Printed Saree",

@@ -7,12 +7,17 @@ import { placeOrder } from "@/lib/orders/place-order";
 
 import { useCartStore } from "@/store/cart-store";
 import { useCheckoutStore } from "@/store/checkout-store";
+import { toast } from "sonner";
 
 export default function PlaceOrder() {
   const router = useRouter();
 
   const cartItems = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
+
+const removeUnavailableItems = useCartStore(
+  (state) => state.removeUnavailableItems
+);
 
   const checkout = useCheckoutStore();
 
@@ -66,10 +71,30 @@ export default function PlaceOrder() {
       checkout.reset();
 
       router.push(`/order-success?order=${result.orderNumber}`);
-    } catch (error) {
-      console.error(error);
-      alert("Failed to place order.");
-    } finally {
+    } catch (error: any) {
+        console.error(error);
+      
+        if (
+          error.message === "OUT_OF_STOCK"
+        ) {
+          removeUnavailableItems(
+            error.items.map((item: any) => ({
+              id: item.id,
+              size: item.size,
+            }))
+          );
+      
+          toast.error(
+            "Some items were removed because they are no longer available."
+          );
+      
+          return;
+        }
+      
+        toast.error(
+          error.message || "Failed to place order."
+        );
+      }finally {
       setLoading(false);
     }
   }

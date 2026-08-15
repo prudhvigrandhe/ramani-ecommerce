@@ -23,6 +23,41 @@ export async function placeOrder(
 
   const { subtotal, shippingCharge, total } =
     calculateOrder(cartItems);
+// Verify latest inventory before placing order
+const unavailableItems: {
+    id: number;
+    size: string;
+    name: string;
+  }[] = [];
+
+for (const item of cartItems) {
+  const { data: product, error } = await supabase
+    .from("products")
+    .select("available_sizes")
+    .eq("id", item.id)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  const availableSizes = product.available_sizes || [];
+
+  if (!availableSizes.includes(item.size)) {
+    unavailableItems.push({
+        id: item.id,
+        size: item.size,
+        name: item.name,
+      });
+  }
+}
+
+if (unavailableItems.length > 0) {
+    const error = new Error("OUT_OF_STOCK");
+(error as any).items = unavailableItems;
+
+throw error;
+}
 
   // Create Order
   const { data: order, error: orderError } = await supabase
@@ -43,8 +78,8 @@ export async function placeOrder(
       total,
 
       payment_method: "Online",
-      payment_status: "Paid",
-      order_status: "Confirmed",
+      payment_status: "Pending",
+order_status: "Pending",
 
       order_number: "TEMP",
     })

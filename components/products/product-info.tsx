@@ -7,9 +7,9 @@ import {
   Star,
   Truck,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Product } from "@/lib/types";
-import QuantitySelector from "./quantity-selector";
 import SizeSelector from "./size-selector";
 import { useCartStore } from "@/store/cart-store";
 
@@ -18,8 +18,9 @@ type Props = {
 };
 
 export default function ProductInfo({ product }: Props) {
-  const [size, setSize] = useState("M");
-  const [quantity, setQuantity] = useState(1);
+    const [size, setSize] = useState(
+        product.availableSizes?.[0] ?? "XS"
+      );
 
   const addToCart = useCartStore(
     (state) => state.addToCart
@@ -31,10 +32,15 @@ export default function ProductInfo({ product }: Props) {
       100
   );
 
-  function handleAddToCart() {
-    addToCart(product, quantity, size);
+  const selectedSizeAvailable =
+    product.availableSizes.includes(size);
 
-    alert("Added to cart!");
+  function handleAddToCart() {
+    if (!selectedSizeAvailable) return;
+
+    addToCart(product, 1, size);
+
+    toast.success("🛍️ Added to your shopping bag.");
   }
 
   return (
@@ -74,73 +80,93 @@ export default function ProductInfo({ product }: Props) {
 
       <div className="space-y-6">
 
+        <div>
+          <p className="text-lg leading-8 text-gray-600">
+            Premium quality women's fashion crafted for
+            comfort, elegance and everyday confidence.
+            Designed for festive, office and casual wear.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border bg-gray-50 p-6">
+
+          <h3 className="mb-5 text-lg font-semibold">
+            Product Specifications
+          </h3>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+
   <div>
-    <p className="text-lg leading-8 text-gray-600">
-      Premium quality women's fashion crafted for
-      comfort, elegance and everyday confidence.
-      Designed for festive, office and casual wear.
+    <p className="text-sm text-gray-500">Fabric</p>
+    <p className="font-medium">{product.fabric || "-"}</p>
+  </div>
+
+  <div>
+    <p className="text-sm text-gray-500">Fit</p>
+    <p className="font-medium">{product.fit || "-"}</p>
+  </div>
+
+  <div>
+    <p className="text-sm text-gray-500">Occasion</p>
+    <p className="font-medium">{product.occasion || "-"}</p>
+  </div>
+
+  <div>
+    <p className="text-sm text-gray-500">Sleeve</p>
+    <p className="font-medium">{product.sleeve || "-"}</p>
+  </div>
+
+  <div>
+    <p className="text-sm text-gray-500">Wash Care</p>
+    <p className="font-medium">{product.washCare || "-"}</p>
+  </div>
+
+  <div>
+    <p className="text-sm text-gray-500">Color</p>
+    <p className="font-medium">{product.color || "-"}</p>
+  </div>
+
+  <div>
+    <p className="text-sm text-gray-500">Pattern</p>
+    <p className="font-medium">{product.pattern || "-"}</p>
+  </div>
+
+  <div>
+    <p className="text-sm text-gray-500">SKU</p>
+    <p className="font-medium">
+      {product.sku || `RAM-${product.id.toString().padStart(4, "0")}`}
     </p>
   </div>
 
-  <div className="rounded-2xl border bg-gray-50 p-6">
-
-    <h3 className="mb-5 text-lg font-semibold">
-      Product Specifications
-    </h3>
-
-    <div className="grid gap-5 sm:grid-cols-2">
-
-      <div>
-        <p className="text-sm text-gray-500">Fabric</p>
-        <p className="font-medium">Pure Cotton</p>
-      </div>
-
-      <div>
-        <p className="text-sm text-gray-500">Fit</p>
-        <p className="font-medium">Regular Fit</p>
-      </div>
-
-      <div>
-        <p className="text-sm text-gray-500">Occasion</p>
-        <p className="font-medium">Casual Wear</p>
-      </div>
-
-      <div>
-        <p className="text-sm text-gray-500">Sleeve</p>
-        <p className="font-medium">Full Sleeve</p>
-      </div>
-
-      <div>
-        <p className="text-sm text-gray-500">Wash Care</p>
-        <p className="font-medium">Machine Wash</p>
-      </div>
-
-      <div>
-        <p className="text-sm text-gray-500">SKU</p>
-        <p className="font-medium">
-          RAM-{product.id.toString().padStart(4, "0")}
-        </p>
-      </div>
-
-    </div>
-
-  </div>
-
 </div>
-<div className="rounded-2xl border bg-white p-5">
 
+        </div>
+
+      </div>
+
+      <div className="rounded-2xl border bg-white p-5">
   <div className="space-y-5">
 
     <div className="flex items-start gap-4">
-      <div className="text-2xl">🟢</div>
+      <div className="text-2xl">
+        {selectedSizeAvailable ? "🟢" : "🔴"}
+      </div>
 
       <div>
-        <h3 className="font-semibold">
-          In Stock
+        <h3
+          className={`font-semibold ${
+            selectedSizeAvailable
+              ? "text-green-600"
+              : "text-red-600"
+          }`}
+        >
+          {selectedSizeAvailable ? "In Stock" : "Out of Stock"}
         </h3>
 
         <p className="text-sm text-gray-500">
-          Only 8 pieces left. Order soon.
+          {selectedSizeAvailable
+            ? `Size ${size} is available`
+            : `Size ${size} is currently unavailable`}
         </p>
       </div>
     </div>
@@ -152,11 +178,11 @@ export default function ProductInfo({ product }: Props) {
 
       <div>
         <h3 className="font-semibold">
-          Free Delivery
+          Delivery Across India
         </h3>
 
         <p className="text-sm text-gray-500">
-          Delivery within 3–5 business days.
+          Shipping charges are calculated at checkout.
         </p>
       </div>
     </div>
@@ -164,15 +190,15 @@ export default function ProductInfo({ product }: Props) {
     <hr />
 
     <div className="flex items-start gap-4">
-      <div className="text-2xl">🔄</div>
+      <div className="text-2xl">💳</div>
 
       <div>
         <h3 className="font-semibold">
-          Easy Returns
+          Secure Online Payment
         </h3>
 
         <p className="text-sm text-gray-500">
-          7-day hassle-free return & exchange.
+          100% secure payment through trusted payment partners.
         </p>
       </div>
     </div>
@@ -180,41 +206,45 @@ export default function ProductInfo({ product }: Props) {
     <hr />
 
     <div className="flex items-start gap-4">
-      <div className="text-2xl">🔒</div>
+      <div className="text-2xl">📞</div>
 
       <div>
         <h3 className="font-semibold">
-          Secure Checkout
+          Customer Support
         </h3>
 
         <p className="text-sm text-gray-500">
-          Safe & secure payment experience.
+          Need help? Contact us through WhatsApp or call our support team.
         </p>
       </div>
     </div>
 
   </div>
-
 </div>
 
       <SizeSelector
-        size={size}
-        setSize={setSize}
-      />
-
-      <QuantitySelector
-        quantity={quantity}
-        setQuantity={setQuantity}
-      />
+  sizes={product.availableSizes}
+  size={size}
+  setSize={setSize}
+/>
 
       <div className="flex gap-4">
 
         <button
           onClick={handleAddToCart}
-          className="flex flex-1 items-center justify-center gap-3 rounded-xl bg-[#5B214B] py-4 font-semibold text-white transition hover:opacity-90"
+          disabled={!selectedSizeAvailable}
+          className={`flex flex-1 items-center justify-center gap-3 rounded-xl py-4 font-semibold text-white transition ${
+            selectedSizeAvailable
+              ? "bg-[#5B214B] hover:opacity-90"
+              : "cursor-not-allowed bg-gray-400"
+          }`}
         >
           <ShoppingBag className="h-5 w-5" />
-          Add To Cart
+
+          {selectedSizeAvailable
+            ? "Add To Cart"
+            : "Out of Stock"}
+
         </button>
 
         <button className="rounded-xl border px-5 transition hover:bg-gray-100">

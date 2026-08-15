@@ -4,12 +4,17 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Heart, ShoppingBag, Menu } from "lucide-react";
 
+import { useWishlistStore } from "@/store/wishlist-store";
+
 import SearchBar from "@/components/ui/search-bar";
 import MobileMenu from "./mobile-menu";
 import { useCartStore } from "@/store/cart-store";
 
 export default function Navbar() {
   const totalItems = useCartStore((state) => state.totalItems());
+  const wishlistItems = useWishlistStore(
+    (state) => state.totalItems()
+  );
 
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -46,9 +51,18 @@ export default function Navbar() {
 
         {/* Right Icons */}
         <div className="flex items-center gap-4">
-          <button>
-            <Heart className="h-6 w-6" />
-          </button>
+        <Link
+  href="/wishlist"
+  className="relative"
+>
+  <Heart className="h-6 w-6" />
+
+  {mounted && wishlistItems > 0 && (
+    <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#5B214B] text-xs font-bold text-white">
+      {wishlistItems}
+    </span>
+  )}
+</Link>
 
           <Link
             href="/cart"

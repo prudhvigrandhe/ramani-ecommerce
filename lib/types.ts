@@ -13,11 +13,20 @@ export type Product = {
     rating: number;
   
     image: string;
-    image_path?: string;
+    images: string[];
   
     stock: boolean;
+    availableSizes: string[];
+
+    fabric: string;
+fit: string;
+occasion: string;
+sleeve: string;
+washCare: string;
+color: string;
+pattern: string;
+sku: string;
   
-    // Homepage Sections
     is_trending: boolean;
     is_best_seller: boolean;
     is_new_arrival: boolean;
