@@ -1,5 +1,6 @@
 import AdminHeader from "@/components/admin/admin-header";
 import ProductTable from "@/components/admin/product-table";
+import LogoutButton from "@/components/admin/logout-button";
 
 export default function AdminPage() {
   return (
