@@ -6,10 +6,12 @@ import { useProducts } from "@/hooks/use-products";
 
 type Props = {
   initialCategory: string;
+  initialSearch: string;
 };
 
 export default function ProductsClient({
   initialCategory,
+  initialSearch,
 }: Props) {
   const {
     products,
@@ -19,7 +21,10 @@ export default function ProductsClient({
     setCategory,
     sort,
     setSort,
-  } = useProducts(initialCategory);
+  } = useProducts(
+    initialCategory,
+    initialSearch
+  );
 
   return (
     <main className="mx-auto max-w-[1600px] px-4 py-12">

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Trash2 } from "lucide-react";
+import { Trash2, Minus, Plus } from "lucide-react";
 import { CartItem, useCartStore } from "@/store/cart-store";
 
 type Props = {
@@ -9,13 +9,21 @@ type Props = {
 };
 
 export default function CartItemCard({ item }: Props) {
-//   const increaseQuantity = useCartStore((state) => state.increaseQuantity);
-//   const decreaseQuantity = useCartStore((state) => state.decreaseQuantity);
-  const removeFromCart = useCartStore((state) => state.removeFromCart);
+  const increaseQuantity = useCartStore(
+    (state) => state.increaseQuantity
+  );
+
+  const decreaseQuantity = useCartStore(
+    (state) => state.decreaseQuantity
+  );
+
+  const removeFromCart = useCartStore(
+    (state) => state.removeFromCart
+  );
 
   return (
     <div className="flex gap-6 rounded-2xl border bg-white p-5 shadow-sm">
-
+      {/* Product Image */}
       <div className="relative h-36 w-28 overflow-hidden rounded-xl">
         <Image
           src={item.image}
@@ -25,8 +33,8 @@ export default function CartItemCard({ item }: Props) {
         />
       </div>
 
+      {/* Product Details */}
       <div className="flex flex-1 flex-col justify-between">
-
         <div>
           <h3 className="text-xl font-semibold">
             {item.name}
@@ -41,26 +49,49 @@ export default function CartItemCard({ item }: Props) {
           </p>
         </div>
 
+        {/* Bottom Controls */}
         <div className="mt-6 flex items-center justify-between">
+          {/* Quantity Controls */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() =>
+                decreaseQuantity(item.id, item.size)
+              }
+              disabled={item.quantity <= 1}
+              className="flex h-9 w-9 items-center justify-center rounded-full border text-[#5B214B] transition hover:bg-[#5B214B]/10 disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Decrease quantity"
+            >
+              <Minus className="h-4 w-4" />
+            </button>
 
-  <span className="rounded-full bg-[#5B214B]/10 px-4 py-2 text-sm font-medium text-[#5B214B]">
-    1 Piece
-  </span>
+            <span className="min-w-[80px] rounded-full bg-[#5B214B]/10 px-4 py-2 text-center text-sm font-medium text-[#5B214B]">
+              {item.quantity}{" "}
+              {item.quantity === 1 ? "Piece" : "Pieces"}
+            </span>
 
-  <button
-    onClick={() =>
-      removeFromCart(item.id, item.size)
-    }
-    className="flex items-center gap-2 text-red-500 transition hover:text-red-700"
-  >
-    <Trash2 className="h-5 w-5" />
-    Remove
-  </button>
+            <button
+              onClick={() =>
+                increaseQuantity(item.id, item.size)
+              }
+              className="flex h-9 w-9 items-center justify-center rounded-full border text-[#5B214B] transition hover:bg-[#5B214B]/10"
+              aria-label="Increase quantity"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
 
-</div>
-
+          {/* Remove */}
+          <button
+            onClick={() =>
+              removeFromCart(item.id, item.size)
+            }
+            className="flex items-center gap-2 text-red-500 transition hover:text-red-700"
+          >
+            <Trash2 className="h-5 w-5" />
+            Remove
+          </button>
+        </div>
       </div>
-
     </div>
   );
 }

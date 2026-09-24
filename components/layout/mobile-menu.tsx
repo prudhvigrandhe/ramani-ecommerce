@@ -31,8 +31,8 @@ const menuItems = [
     href: "/products?category=Tops",
   },
   {
-    title: "Shop",
-    href: "/products",
+    title: "Orders",
+    href: "/orders",
   },
 ];
 

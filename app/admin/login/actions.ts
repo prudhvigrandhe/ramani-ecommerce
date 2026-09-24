@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { createAdminSessionToken } from "@/lib/admin/auth";
 
 export async function login(
   prevState: { error: string },
@@ -13,14 +14,14 @@ export async function login(
     username !== process.env.ADMIN_USERNAME ||
     password !== process.env.ADMIN_PASSWORD
   ) {
-    return {
-      error: "Invalid username or password.",
-    };
+    return { error: "Invalid username or password." };
   }
 
   const cookieStore = await cookies();
 
-  cookieStore.set("admin-session", "logged-in", {
+  const sessionToken = await createAdminSessionToken();
+
+  cookieStore.set("admin-session", sessionToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

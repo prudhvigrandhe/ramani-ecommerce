@@ -222,10 +222,11 @@ export default function ProductInfo({ product }: Props) {
   </div>
 </div>
 
-      <SizeSelector
+<SizeSelector
   sizes={product.availableSizes}
   size={size}
   setSize={setSize}
+  sizeStock={product.sizeStock}
 />
 
       <div className="flex gap-4">

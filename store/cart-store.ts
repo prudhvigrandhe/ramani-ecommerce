@@ -60,15 +60,71 @@ export const useCartStore = create<CartStore>()(
       ) => {
         const items = [...get().items];
 
+        if (!Number.isInteger(quantity) || quantity <= 0) {
+          toast.error("Invalid quantity.");
+          return;
+        }
+
+        /*
+         * Check the available stock for the selected size.
+         */
+        const availableStock =
+          product.sizeStock?.[size] ?? 0;
+
+        if (availableStock <= 0) {
+          toast.error(
+            `Sorry, ${size} is currently out of stock.`
+          );
+          return;
+        }
+
         const existing = items.find(
           (item) =>
             item.id === product.id &&
             item.size === size
         );
 
+        /*
+         * If the same product + size is already
+         * in the cart, increase its quantity.
+         */
         if (existing) {
+          const newQuantity =
+            existing.quantity + quantity;
+
+          if (newQuantity > availableStock) {
+            toast.error(
+              `Only ${availableStock} ${
+                availableStock === 1
+                  ? "piece"
+                  : "pieces"
+              } available in ${size}.`
+            );
+            return;
+          }
+
+          existing.quantity = newQuantity;
+
+          set({ items });
+
+          toast.success(
+            "🛍️ Cart quantity updated."
+          );
+
+          return;
+        }
+
+        /*
+         * Make sure the requested quantity
+         * doesn't exceed available stock.
+         */
+        if (quantity > availableStock) {
           toast.error(
-            "Sorry, this size is currently out of stock."
+            `Only ${availableStock} ${
+              availableStock === 1
+                ? "piece"
+                : "pieces"
+            } available in ${size}.`
           );
           return;
         }
@@ -117,9 +173,27 @@ export const useCartStore = create<CartStore>()(
             p.size === size
         );
 
-        if (item) {
-          item.quantity++;
+        if (!item) return;
+
+        /*
+         * Get the latest stock value stored
+         * with this product in the cart.
+         */
+        const availableStock =
+          item.sizeStock?.[size] ?? 0;
+
+        if (item.quantity >= availableStock) {
+          toast.error(
+            `Only ${availableStock} ${
+              availableStock === 1
+                ? "piece"
+                : "pieces"
+            } available in ${size}.`
+          );
+          return;
         }
+
+        item.quantity++;
 
         set({ items });
       },
@@ -170,8 +244,7 @@ export const useCartStore = create<CartStore>()(
               !unavailable.some(
                 (item) =>
                   item.id === cartItem.id &&
-                  item.size ===
-                    cartItem.size
+                  item.size === cartItem.size
               )
           ),
         });

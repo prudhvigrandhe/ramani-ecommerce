@@ -27,7 +27,6 @@ export default function ProductGallery({
   return (
     <div className="space-y-6">
       {/* Main Image */}
-
       <div className="relative aspect-[4/5] overflow-hidden rounded-3xl border bg-white shadow-sm">
         <Image
           key={selectedImage}
@@ -36,12 +35,11 @@ export default function ProductGallery({
           fill
           priority
           sizes="(max-width:1024px)100vw,50vw"
-          className="object-cover transition-all duration-300 hover:scale-105"
+          className="object-contain transition-all duration-300 hover:scale-105"
         />
       </div>
 
       {/* Thumbnails */}
-
       {allImages.length > 1 && (
         <div className="grid grid-cols-4 gap-4">
           {allImages.map((image, index) => (

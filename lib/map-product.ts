@@ -15,6 +15,7 @@ type SupabaseProduct = {
 
   stock: boolean | null;
   available_sizes: string[] | null;
+  size_stock: Record<string, number> | null;
 
   fabric: string | null;
   fit: string | null;
@@ -58,6 +59,7 @@ export function mapProduct(product: SupabaseProduct): Product {
 
     stock: product.stock ?? true,
     availableSizes: product.available_sizes ?? [],
+    sizeStock: product.size_stock ?? {},
 
     fabric: product.fabric ?? "",
     fit: product.fit ?? "",

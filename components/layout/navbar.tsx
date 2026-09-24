@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+
 import Link from "next/link";
 import { Heart, ShoppingBag, Menu } from "lucide-react";
 
@@ -9,6 +9,7 @@ import { useWishlistStore } from "@/store/wishlist-store";
 import SearchBar from "@/components/ui/search-bar";
 import MobileMenu from "./mobile-menu";
 import { useCartStore } from "@/store/cart-store";
+import { Suspense, useEffect, useState } from "react";
 
 export default function Navbar() {
   const totalItems = useCartStore((state) => state.totalItems());
@@ -41,13 +42,15 @@ export default function Navbar() {
           <Link href="/products?category=Sarees">Sarees</Link>
           <Link href="/products?category=Kurtas">Kurtas</Link>
           <Link href="/products?category=Tops">Tops</Link>
-          <Link href="/products">Shop</Link>
+          <Link href="/orders">Orders</Link>
         </nav>
 
         {/* Desktop Search */}
         <div className="hidden lg:block">
-          <SearchBar />
-        </div>
+  <Suspense fallback={null}>
+    <SearchBar />
+  </Suspense>
+</div>
 
         {/* Right Icons */}
         <div className="flex items-center gap-4">

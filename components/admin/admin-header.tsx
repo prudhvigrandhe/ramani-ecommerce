@@ -11,12 +11,11 @@ export default function AdminHeader() {
         </p>
 
         <h1 className="mt-2 text-4xl font-bold">
-          Products
+          Dashboard
         </h1>
       </div>
 
       <div className="flex items-center gap-3">
-
         <Link
           href="/admin/add-product"
           className="flex items-center gap-2 rounded-xl bg-[#5B214B] px-5 py-3 font-medium text-white transition hover:opacity-90"
@@ -26,7 +25,6 @@ export default function AdminHeader() {
         </Link>
 
         <LogoutButton />
-
       </div>
     </div>
   );
