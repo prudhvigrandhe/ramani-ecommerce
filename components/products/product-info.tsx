@@ -8,6 +8,7 @@ import {
   Truck,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 import { Product } from "@/lib/types";
 import SizeSelector from "./size-selector";
@@ -18,223 +19,189 @@ type Props = {
 };
 
 export default function ProductInfo({ product }: Props) {
-    const [size, setSize] = useState(
-        product.availableSizes?.[0] ?? "XS"
-      );
+  const router = useRouter();
+
+  const firstAvailableSize =
+  product.availableSizes?.find(
+    (availableSize) =>
+      Number(product.sizeStock?.[availableSize] ?? 0) > 0
+  ) ?? product.availableSizes?.[0] ?? "XS";
+
+const [size, setSize] = useState(firstAvailableSize);
 
   const addToCart = useCartStore(
     (state) => state.addToCart
   );
 
-  const discount = Math.round(
-    ((product.originalPrice - product.price) /
-      product.originalPrice) *
-      100
+  const selectedSizeAvailable =
+    Number(product.sizeStock?.[size] ?? 0) > 0;
+
+  const discount =
+    product.originalPrice > 0
+      ? Math.round(
+          ((product.originalPrice - product.price) /
+            product.originalPrice) *
+            100
+        )
+      : 0;
+
+  const specifications = [
+    {
+      label: "Fabric",
+      value: product.fabric,
+    },
+    {
+      label: "Fit",
+      value: product.fit,
+    },
+    {
+      label: "Occasion",
+      value: product.occasion,
+    },
+    {
+      label: "Sleeve",
+      value: product.sleeve,
+    },
+    {
+      label: "Wash Care",
+      value: product.washCare,
+    },
+    {
+      label: "Color",
+      value: product.color,
+    },
+    {
+      label: "Pattern",
+      value: product.pattern,
+    },
+  ].filter(
+    (spec) =>
+      typeof spec.value === "string" &&
+      spec.value.trim() !== ""
   );
 
-  const selectedSizeAvailable =
-    product.availableSizes.includes(size);
-
   function handleAddToCart() {
-    if (!selectedSizeAvailable) return;
+    if (!selectedSizeAvailable) {
+      toast.error(
+        "Selected size is currently unavailable."
+      );
+      return;
+    }
 
     addToCart(product, 1, size);
 
-    toast.success("🛍️ Added to your shopping bag.");
+    toast.success(
+      "🛍️ Added to your shopping bag."
+    );
+  }
+
+  function handleBuyNow() {
+    if (!selectedSizeAvailable) {
+      toast.error(
+        "Please select an available size."
+      );
+      return;
+    }
+
+    addToCart(product, 1, size);
+
+    router.push("/checkout");
   }
 
   return (
     <div className="space-y-8">
 
+      {/* Product Header */}
       <div>
         <p className="text-sm uppercase tracking-[0.3em] text-[#5B214B]">
           Ramani Collection
         </p>
 
-        <h1 className="mt-3 text-5xl font-bold">
+        <h1 className="mt-3 text-4xl font-bold sm:text-5xl">
           {product.name}
         </h1>
 
         <div className="mt-5 flex items-center gap-2">
           <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+
           <span>{product.rating}</span>
+
           <span className="text-gray-400">
             (142 Reviews)
           </span>
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <span className="text-5xl font-bold">
+      {/* Price */}
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+        <span className="text-4xl font-bold sm:text-5xl">
           ₹{product.price}
         </span>
 
-        <span className="text-3xl text-gray-400 line-through">
+        <span className="text-2xl text-gray-400 line-through sm:text-3xl">
           ₹{product.originalPrice}
         </span>
 
-        <span className="rounded-full bg-green-100 px-4 py-2 font-semibold text-green-700">
+        <span className="rounded-full bg-green-100 px-3 py-1.5 text-sm font-semibold text-green-700 sm:px-4 sm:py-2">
           {discount}% OFF
         </span>
       </div>
 
+      {/* Description + Specifications */}
       <div className="space-y-6">
 
+        {/* Description */}
         <div>
-          <p className="text-lg leading-8 text-gray-600">
+          <p className="text-base leading-7 text-gray-600 sm:text-lg sm:leading-8">
             Premium quality women's fashion crafted for
             comfort, elegance and everyday confidence.
             Designed for festive, office and casual wear.
           </p>
         </div>
 
-        <div className="rounded-2xl border bg-gray-50 p-6">
+        {/* Product Specifications */}
+        {specifications.length > 0 && (
+          <div className="rounded-2xl border bg-gray-50 p-4 sm:p-6">
 
-          <h3 className="mb-5 text-lg font-semibold">
-            Product Specifications
-          </h3>
+            <h3 className="mb-4 text-base font-semibold sm:mb-5 sm:text-lg">
+              Product Specifications
+            </h3>
 
-          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-4 sm:gap-5">
 
-  <div>
-    <p className="text-sm text-gray-500">Fabric</p>
-    <p className="font-medium">{product.fabric || "-"}</p>
-  </div>
+              {specifications.map((spec) => (
+                <div key={spec.label}>
+                  <p className="text-xs text-gray-500 sm:text-sm">
+                    {spec.label}
+                  </p>
 
-  <div>
-    <p className="text-sm text-gray-500">Fit</p>
-    <p className="font-medium">{product.fit || "-"}</p>
-  </div>
+                  <p className="text-sm font-medium sm:text-base">
+                    {spec.value}
+                  </p>
+                </div>
+              ))}
 
-  <div>
-    <p className="text-sm text-gray-500">Occasion</p>
-    <p className="font-medium">{product.occasion || "-"}</p>
-  </div>
-
-  <div>
-    <p className="text-sm text-gray-500">Sleeve</p>
-    <p className="font-medium">{product.sleeve || "-"}</p>
-  </div>
-
-  <div>
-    <p className="text-sm text-gray-500">Wash Care</p>
-    <p className="font-medium">{product.washCare || "-"}</p>
-  </div>
-
-  <div>
-    <p className="text-sm text-gray-500">Color</p>
-    <p className="font-medium">{product.color || "-"}</p>
-  </div>
-
-  <div>
-    <p className="text-sm text-gray-500">Pattern</p>
-    <p className="font-medium">{product.pattern || "-"}</p>
-  </div>
-
-  <div>
-    <p className="text-sm text-gray-500">SKU</p>
-    <p className="font-medium">
-      {product.sku || `RAM-${product.id.toString().padStart(4, "0")}`}
-    </p>
-  </div>
-
-</div>
-
-        </div>
+            </div>
+          </div>
+        )}
 
       </div>
 
-      <div className="rounded-2xl border bg-white p-5">
-  <div className="space-y-5">
+      {/* Size Selection */}
+      <SizeSelector
+        sizes={product.availableSizes}
+        size={size}
+        setSize={setSize}
+        sizeStock={product.sizeStock}
+      />
 
-    <div className="flex items-start gap-4">
-      <div className="text-2xl">
-        {selectedSizeAvailable ? "🟢" : "🔴"}
-      </div>
-
-      <div>
-        <h3
-          className={`font-semibold ${
-            selectedSizeAvailable
-              ? "text-green-600"
-              : "text-red-600"
-          }`}
-        >
-          {selectedSizeAvailable ? "In Stock" : "Out of Stock"}
-        </h3>
-
-        <p className="text-sm text-gray-500">
-          {selectedSizeAvailable
-            ? `Size ${size} is available`
-            : `Size ${size} is currently unavailable`}
-        </p>
-      </div>
-    </div>
-
-    <hr />
-
-    <div className="flex items-start gap-4">
-      <div className="text-2xl">🚚</div>
-
-      <div>
-        <h3 className="font-semibold">
-          Delivery Across India
-        </h3>
-
-        <p className="text-sm text-gray-500">
-          Shipping charges are calculated at checkout.
-        </p>
-      </div>
-    </div>
-
-    <hr />
-
-    <div className="flex items-start gap-4">
-      <div className="text-2xl">💳</div>
-
-      <div>
-        <h3 className="font-semibold">
-          Secure Online Payment
-        </h3>
-
-        <p className="text-sm text-gray-500">
-          100% secure payment through trusted payment partners.
-        </p>
-      </div>
-    </div>
-
-    <hr />
-
-    <div className="flex items-start gap-4">
-      <div className="text-2xl">📞</div>
-
-      <div>
-        <h3 className="font-semibold">
-          Customer Support
-        </h3>
-
-        <p className="text-sm text-gray-500">
-          Need help? Contact us through WhatsApp or call our support team.
-        </p>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<SizeSelector
-  sizes={product.availableSizes}
-  size={size}
-  setSize={setSize}
-  sizeStock={product.sizeStock}
-/>
-
-      <div className="flex gap-4">
+      {/* Add To Cart + Wishlist */}
+      <div className="flex gap-3 sm:gap-4">
 
         <button
           onClick={handleAddToCart}
           disabled={!selectedSizeAvailable}
-          className={`flex flex-1 items-center justify-center gap-3 rounded-xl py-4 font-semibold text-white transition ${
+          className={`flex flex-1 items-center justify-center gap-3 rounded-xl py-3.5 font-semibold text-white transition sm:py-4 ${
             selectedSizeAvailable
               ? "bg-[#5B214B] hover:opacity-90"
               : "cursor-not-allowed bg-gray-400"
@@ -245,19 +212,129 @@ export default function ProductInfo({ product }: Props) {
           {selectedSizeAvailable
             ? "Add To Cart"
             : "Out of Stock"}
-
         </button>
 
-        <button className="rounded-xl border px-5 transition hover:bg-gray-100">
+        <button
+          type="button"
+          className="rounded-xl border px-4 transition hover:bg-gray-100 sm:px-5"
+          aria-label="Add to wishlist"
+        >
           <Heart className="h-6 w-6" />
         </button>
 
       </div>
 
-      <button className="flex w-full items-center justify-center gap-3 rounded-xl border-2 border-[#5B214B] py-4 font-semibold text-[#5B214B] transition hover:bg-[#5B214B] hover:text-white">
+      {/* Buy Now */}
+      <button
+        type="button"
+        onClick={handleBuyNow}
+        disabled={!selectedSizeAvailable}
+        className={`flex w-full items-center justify-center gap-3 rounded-xl border-2 py-3.5 font-semibold transition sm:py-4 ${
+          selectedSizeAvailable
+            ? "border-[#5B214B] text-[#5B214B] hover:bg-[#5B214B] hover:text-white"
+            : "cursor-not-allowed border-gray-300 text-gray-400"
+        }`}
+      >
         <Truck className="h-5 w-5" />
-        Buy Now
+
+        {selectedSizeAvailable
+          ? "Buy Now"
+          : "Out of Stock"}
       </button>
+
+      {/* Product Benefits */}
+      <div className="rounded-2xl border bg-white p-4 sm:p-5">
+
+        <div className="space-y-4 sm:space-y-5">
+
+          {/* Stock */}
+          <div className="flex items-start gap-3 sm:gap-4">
+            <div className="text-xl sm:text-2xl">
+              {selectedSizeAvailable
+                ? "🟢"
+                : "🔴"}
+            </div>
+
+            <div>
+              <h3
+                className={`font-semibold ${
+                  selectedSizeAvailable
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {selectedSizeAvailable
+                  ? "In Stock"
+                  : "Out of Stock"}
+              </h3>
+
+              <p className="text-sm text-gray-500">
+                {selectedSizeAvailable
+                  ? `Size ${size} is available`
+                  : `Size ${size} is currently unavailable`}
+              </p>
+            </div>
+          </div>
+
+          <hr />
+
+          {/* Delivery */}
+          <div className="flex items-start gap-3 sm:gap-4">
+            <div className="text-xl sm:text-2xl">
+              🚚
+            </div>
+
+            <div>
+              <h3 className="font-semibold">
+                Delivery Across India
+              </h3>
+
+              <p className="text-sm text-gray-500">
+                Shipping charges are calculated at checkout.
+              </p>
+            </div>
+          </div>
+
+          <hr />
+
+          {/* Secure Payment */}
+          <div className="flex items-start gap-3 sm:gap-4">
+            <div className="text-xl sm:text-2xl">
+              💳
+            </div>
+
+            <div>
+              <h3 className="font-semibold">
+                Secure Online Payment
+              </h3>
+
+              <p className="text-sm text-gray-500">
+                100% secure payment through trusted payment partners.
+              </p>
+            </div>
+          </div>
+
+          <hr />
+
+          {/* Customer Support */}
+          <div className="flex items-start gap-3 sm:gap-4">
+            <div className="text-xl sm:text-2xl">
+              📞
+            </div>
+
+            <div>
+              <h3 className="font-semibold">
+                Customer Support
+              </h3>
+
+              <p className="text-sm text-gray-500">
+                Need help? Contact us through WhatsApp or call our support team.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
 
     </div>
   );

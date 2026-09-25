@@ -13,22 +13,23 @@ export async function POST(req: NextRequest) {
     const razorpayPaymentId = body.razorpay_payment_id;
     const razorpaySignature = body.razorpay_signature;
 
-    if (
-      !razorpayOrderId ||
-      !razorpayPaymentId ||
-      !razorpaySignature
-    ) {
+    /*
+     * We always need the Razorpay order ID.
+     * For already-verified/recovery states, the payment ID
+     * and signature may not be needed from the browser.
+     */
+    if (!razorpayOrderId) {
       return NextResponse.json(
         {
-          error: "Missing payment verification details.",
+          error: "Missing Razorpay order ID.",
         },
         { status: 400 }
       );
     }
 
     /*
-     * 1. Find the payment attempt created
-     *    when the Razorpay order was created.
+     * 1. Find the payment attempt created when
+     *    the Razorpay order was created.
      */
     const {
       data: paymentAttempt,
@@ -63,6 +64,16 @@ export async function POST(req: NextRequest) {
     }
 
     /*
+     * This is the trusted payment ID once Razorpay
+     * has already been verified.
+     *
+     * Never replace this with an arbitrary payment ID
+     * supplied by the browser during recovery.
+     */
+    const storedPaymentId =
+      paymentAttempt.razorpay_payment_id;
+
+    /*
      * 2. If this payment was already refunded,
      *    return the refund state.
      */
@@ -76,15 +87,231 @@ export async function POST(req: NextRequest) {
             "Payment was received, but the order could not be completed because the item became unavailable. The payment has been refunded.",
           razorpayOrderId,
           razorpayPaymentId:
-            paymentAttempt.razorpay_payment_id ||
-            razorpayPaymentId,
+            storedPaymentId || razorpayPaymentId || null,
         },
         { status: 409 }
       );
     }
 
     /*
-     * 3. If this payment was already completed,
+     * 3. If this payment is waiting for a refund,
+     *    retry/recover the refund using the TRUSTED
+     *    payment ID stored in the database.
+     */
+    if (
+      paymentAttempt.status === "refund_pending"
+    ) {
+      if (!storedPaymentId) {
+        console.error(
+          "REFUND PENDING BUT PAYMENT ID IS MISSING:",
+          razorpayOrderId
+        );
+
+        return NextResponse.json(
+          {
+            error:
+              "Payment refund requires support assistance because the payment ID is missing.",
+            paymentVerified: true,
+            refundPending: true,
+            razorpayOrderId,
+          },
+          { status: 500 }
+        );
+      }
+
+      try {
+        /*
+         * Fetch the payment directly from Razorpay.
+         *
+         * This protects us from accidentally issuing
+         * a second refund if the previous refund succeeded
+         * but our database update failed.
+         */
+        const payment =
+          await razorpay.payments.fetch(
+            storedPaymentId
+          );
+
+        const originalAmount =
+          Number(paymentAttempt.amount);
+
+        const amountRefunded = Number(
+          payment.amount_refunded ?? 0
+        );
+
+        const remainingRefundAmount =
+          originalAmount - amountRefunded;
+
+        /*
+         * Razorpay already shows the full payment
+         * as refunded.
+         */
+        if (remainingRefundAmount <= 0) {
+          const {
+            error: refundedUpdateError,
+          } = await supabaseAdmin
+            .from("payment_attempts")
+            .update({
+              status: "refunded",
+            })
+            .eq(
+              "razorpay_order_id",
+              razorpayOrderId
+            )
+            .eq(
+              "status",
+              "refund_pending"
+            );
+
+          if (refundedUpdateError) {
+            console.error(
+              "REFUNDED STATUS UPDATE ERROR:",
+              refundedUpdateError
+            );
+
+            return NextResponse.json(
+              {
+                error:
+                  "Payment was already refunded, but we could not update the payment record. Please contact support.",
+                paymentVerified: true,
+                refunded: true,
+                razorpayOrderId,
+              },
+              { status: 500 }
+            );
+          }
+
+          return NextResponse.json(
+            {
+              success: false,
+              verified: true,
+              refunded: true,
+              error:
+                "Payment was received, but the item became unavailable. Your payment has been refunded.",
+              razorpayOrderId,
+              razorpayPaymentId: storedPaymentId,
+            },
+            { status: 409 }
+          );
+        }
+
+        /*
+         * Refund only the remaining amount.
+         */
+        await refundPayment(
+          storedPaymentId,
+          remainingRefundAmount
+        );
+
+        /*
+         * Confirm the refund amount with Razorpay
+         * before marking our database as refunded.
+         */
+        const updatedPayment =
+          await razorpay.payments.fetch(
+            storedPaymentId
+          );
+
+        const updatedAmountRefunded =
+          Number(
+            updatedPayment.amount_refunded ?? 0
+          );
+
+        if (
+          updatedAmountRefunded <
+          originalAmount
+        ) {
+          console.error(
+            "REFUND AMOUNT STILL INCOMPLETE:",
+            {
+              originalAmount,
+              updatedAmountRefunded,
+            }
+          );
+
+          return NextResponse.json(
+            {
+              error:
+                "Refund was initiated but is not yet fully reflected by Razorpay. Please contact support.",
+              paymentVerified: true,
+              refundPending: true,
+              razorpayOrderId,
+            },
+            { status: 500 }
+          );
+        }
+
+        const {
+          error: refundedUpdateError,
+        } = await supabaseAdmin
+          .from("payment_attempts")
+          .update({
+            status: "refunded",
+          })
+          .eq(
+            "razorpay_order_id",
+            razorpayOrderId
+          )
+          .eq(
+            "status",
+            "refund_pending"
+          );
+
+        if (refundedUpdateError) {
+          console.error(
+            "REFUNDED STATUS UPDATE ERROR:",
+            refundedUpdateError
+          );
+
+          /*
+           * Razorpay refund already happened.
+           * Do NOT issue another refund.
+           */
+          return NextResponse.json(
+            {
+              error:
+                "Payment was refunded, but we could not update the payment record. Please contact support.",
+              paymentVerified: true,
+              refunded: true,
+              razorpayOrderId,
+            },
+            { status: 500 }
+          );
+        }
+
+        return NextResponse.json(
+          {
+            success: false,
+            verified: true,
+            refunded: true,
+            error:
+              "Payment was received, but the item became unavailable. Your payment has been refunded.",
+            razorpayOrderId,
+            razorpayPaymentId: storedPaymentId,
+          },
+          { status: 409 }
+        );
+      } catch (refundError) {
+        console.error(
+          "REFUND RECOVERY ERROR:",
+          refundError
+        );
+
+        return NextResponse.json(
+          {
+            error:
+              "Payment was successful, but the refund could not be completed automatically. Please contact support.",
+            paymentVerified: true,
+            refundPending: true,
+            razorpayOrderId,
+          },
+          { status: 500 }
+        );
+      }
+    }
+
+    /*
+     * 4. If this payment was already completed,
      *    return the existing order and its private token.
      */
     if (paymentAttempt.status === "completed") {
@@ -96,7 +323,10 @@ export async function POST(req: NextRequest) {
         .select(
           "id, order_number, customer_access_token"
         )
-        .eq("razorpay_order_id", razorpayOrderId)
+        .eq(
+          "razorpay_order_id",
+          razorpayOrderId
+        )
         .maybeSingle();
 
       if (existingOrderError) {
@@ -107,7 +337,8 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(
           {
-            error: "Unable to load completed order.",
+            error:
+              "Unable to load completed order.",
           },
           { status: 500 }
         );
@@ -122,21 +353,42 @@ export async function POST(req: NextRequest) {
         razorpayOrderId,
 
         razorpayPaymentId:
-          paymentAttempt.razorpay_payment_id ||
-          razorpayPaymentId,
+          storedPaymentId ||
+          razorpayPaymentId ||
+          null,
 
-        orderId: existingOrder?.id ?? null,
+        orderId:
+          existingOrder?.id ?? null,
 
         orderNumber:
           existingOrder?.order_number ?? null,
 
         customerAccessToken:
-          existingOrder?.customer_access_token ?? null,
+          existingOrder?.customer_access_token ??
+          null,
       });
     }
 
     /*
-     * 4. Verify the Razorpay signature unless
+     * 5. For a payment that has NOT already been
+     *    marked as paid, the browser must provide
+     *    payment ID + signature.
+     */
+    if (
+      !razorpayPaymentId ||
+      !razorpaySignature
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Missing payment verification details.",
+        },
+        { status: 400 }
+      );
+    }
+
+    /*
+     * 6. Verify the Razorpay signature unless
      *    this payment was already marked as paid.
      */
     if (paymentAttempt.status !== "paid") {
@@ -150,7 +402,10 @@ export async function POST(req: NextRequest) {
         )
         .digest("hex");
 
-      if (generatedSignature !== razorpaySignature) {
+      if (
+        generatedSignature !==
+        razorpaySignature
+      ) {
         console.error(
           "INVALID RAZORPAY SIGNATURE"
         );
@@ -165,7 +420,7 @@ export async function POST(req: NextRequest) {
       }
 
       /*
-       * 5. Fetch payment directly from Razorpay.
+       * 7. Fetch payment directly from Razorpay.
        */
       const payment =
         await razorpay.payments.fetch(
@@ -173,7 +428,7 @@ export async function POST(req: NextRequest) {
         );
 
       /*
-       * 6. Verify payment belongs to our
+       * 8. Verify payment belongs to our
        *    Razorpay order.
        */
       if (
@@ -194,7 +449,7 @@ export async function POST(req: NextRequest) {
       }
 
       /*
-       * 7. Verify amount.
+       * 9. Verify amount.
        */
       if (
         Number(payment.amount) !==
@@ -205,7 +460,8 @@ export async function POST(req: NextRequest) {
           {
             expected:
               paymentAttempt.amount,
-            received: payment.amount,
+            received:
+              payment.amount,
           }
         );
 
@@ -219,7 +475,7 @@ export async function POST(req: NextRequest) {
       }
 
       /*
-       * 8. Verify currency.
+       * 10. Verify currency.
        */
       if (
         payment.currency !==
@@ -239,9 +495,11 @@ export async function POST(req: NextRequest) {
       }
 
       /*
-       * 9. Payment must actually be captured.
+       * 11. Payment must actually be captured.
        */
-      if (payment.status !== "captured") {
+      if (
+        payment.status !== "captured"
+      ) {
         console.error(
           "PAYMENT NOT CAPTURED:",
           payment.status
@@ -257,7 +515,7 @@ export async function POST(req: NextRequest) {
       }
 
       /*
-       * 10. Save the verified payment.
+       * 12. Save the verified payment.
        */
       const {
         error: updateError,
@@ -287,10 +545,18 @@ export async function POST(req: NextRequest) {
           { status: 500 }
         );
       }
+
+      /*
+       * From this point onward, use the verified
+       * payment ID stored in our database.
+       */
+      paymentAttempt.razorpay_payment_id =
+        razorpayPaymentId;
+      paymentAttempt.status = "paid";
     }
 
     /*
-     * 11. Complete the actual ecommerce order.
+     * 13. Complete the actual ecommerce order.
      *
      * PostgreSQL handles this as one transaction:
      *
@@ -313,7 +579,7 @@ export async function POST(req: NextRequest) {
     );
 
     /*
-     * 12. Handle insufficient stock separately.
+     * 14. Handle insufficient stock separately.
      */
     if (completionError) {
       console.error(
@@ -328,7 +594,7 @@ export async function POST(req: NextRequest) {
 
       if (isInsufficientStock) {
         /*
-         * Mark the payment as waiting for refund.
+         * Mark payment as waiting for refund.
          */
         const {
           error: refundPendingError,
@@ -361,15 +627,208 @@ export async function POST(req: NextRequest) {
         }
 
         /*
-         * Refund the captured Razorpay payment.
-         *
-         * Amount is stored in payment_attempts
-         * in paise.
+         * IMPORTANT:
+         * Use the verified payment ID stored in
+         * payment_attempts, never an arbitrary ID
+         * supplied by the browser.
          */
+        const trustedPaymentId =
+          paymentAttempt.razorpay_payment_id;
+
+        if (!trustedPaymentId) {
+          console.error(
+            "TRUSTED PAYMENT ID MISSING FOR REFUND:",
+            razorpayOrderId
+          );
+
+          return NextResponse.json(
+            {
+              error:
+                "Payment was successful, but the refund requires support assistance.",
+              paymentVerified: true,
+              refundPending: true,
+              razorpayOrderId,
+            },
+            { status: 500 }
+          );
+        }
+
         try {
+          /*
+           * Check Razorpay first in case a previous
+           * refund already succeeded.
+           */
+          const payment =
+            await razorpay.payments.fetch(
+              trustedPaymentId
+            );
+
+          const originalAmount =
+            Number(paymentAttempt.amount);
+
+          const amountRefunded =
+            Number(
+              payment.amount_refunded ?? 0
+            );
+
+          const remainingRefundAmount =
+            originalAmount - amountRefunded;
+
+          /*
+           * Already fully refunded.
+           */
+          if (
+            remainingRefundAmount <= 0
+          ) {
+            const {
+              error: refundedUpdateError,
+            } = await supabaseAdmin
+              .from("payment_attempts")
+              .update({
+                status: "refunded",
+              })
+              .eq(
+                "razorpay_order_id",
+                razorpayOrderId
+              )
+              .eq(
+                "status",
+                "refund_pending"
+              );
+
+            if (refundedUpdateError) {
+              console.error(
+                "REFUNDED STATUS UPDATE ERROR:",
+                refundedUpdateError
+              );
+
+              return NextResponse.json(
+                {
+                  error:
+                    "Payment was refunded, but we could not update the payment record. Please contact support.",
+                  paymentVerified: true,
+                  refunded: true,
+                  razorpayOrderId,
+                },
+                { status: 500 }
+              );
+            }
+
+            return NextResponse.json(
+              {
+                success: false,
+                verified: true,
+                refunded: true,
+                error:
+                  "Payment was received, but the item became unavailable. Your payment has been refunded.",
+                razorpayOrderId,
+                razorpayPaymentId:
+                  trustedPaymentId,
+              },
+              { status: 409 }
+            );
+          }
+
+          /*
+           * Refund the remaining amount.
+           */
           await refundPayment(
-            razorpayPaymentId,
-            Number(paymentAttempt.amount)
+            trustedPaymentId,
+            remainingRefundAmount
+          );
+
+          /*
+           * Confirm Razorpay now shows the full
+           * amount as refunded.
+           */
+          const updatedPayment =
+            await razorpay.payments.fetch(
+              trustedPaymentId
+            );
+
+          const updatedAmountRefunded =
+            Number(
+              updatedPayment.amount_refunded ??
+                0
+            );
+
+          if (
+            updatedAmountRefunded <
+            originalAmount
+          ) {
+            console.error(
+              "REFUND AMOUNT STILL INCOMPLETE:",
+              {
+                originalAmount,
+                updatedAmountRefunded,
+              }
+            );
+
+            return NextResponse.json(
+              {
+                error:
+                  "Refund was initiated but is not yet fully reflected by Razorpay. Please contact support.",
+                paymentVerified: true,
+                refundPending: true,
+                razorpayOrderId,
+              },
+              { status: 500 }
+            );
+          }
+
+          /*
+           * Refund succeeded.
+           */
+          const {
+            error: refundedUpdateError,
+          } = await supabaseAdmin
+            .from("payment_attempts")
+            .update({
+              status: "refunded",
+            })
+            .eq(
+              "razorpay_order_id",
+              razorpayOrderId
+            )
+            .eq(
+              "status",
+              "refund_pending"
+            );
+
+          if (refundedUpdateError) {
+            console.error(
+              "REFUNDED STATUS UPDATE ERROR:",
+              refundedUpdateError
+            );
+
+            /*
+             * Razorpay refund already happened.
+             * NEVER issue another refund.
+             */
+            return NextResponse.json(
+              {
+                error:
+                  "Payment was refunded, but we could not update the payment record. Please contact support.",
+                paymentVerified: true,
+                refunded: true,
+                razorpayOrderId,
+              },
+              { status: 500 }
+            );
+          }
+
+          return NextResponse.json(
+            {
+              success: false,
+              verified: true,
+              refunded: true,
+              error:
+                "Payment was received, but the item became unavailable. Your payment has been refunded.",
+              razorpayOrderId,
+              razorpayPaymentId:
+                trustedPaymentId,
+            },
+            { status: 409 }
           );
         } catch (refundError) {
           console.error(
@@ -378,8 +837,8 @@ export async function POST(req: NextRequest) {
           );
 
           /*
-           * Keep refund_pending so the payment
-           * is clearly marked for recovery.
+           * Keep refund_pending so a later recovery
+           * attempt can safely retry the refund.
            */
           return NextResponse.json(
             {
@@ -392,64 +851,11 @@ export async function POST(req: NextRequest) {
             { status: 500 }
           );
         }
-
-        /*
-         * Refund succeeded.
-         */
-        const {
-          error: refundedUpdateError,
-        } = await supabaseAdmin
-          .from("payment_attempts")
-          .update({
-            status: "refunded",
-          })
-          .eq(
-            "razorpay_order_id",
-            razorpayOrderId
-          )
-          .eq(
-            "status",
-            "refund_pending"
-          );
-
-        if (refundedUpdateError) {
-          console.error(
-            "REFUNDED STATUS UPDATE ERROR:",
-            refundedUpdateError
-          );
-
-          /*
-           * The Razorpay refund has already happened.
-           * Do not attempt another refund.
-           */
-          return NextResponse.json(
-            {
-              error:
-                "Payment was refunded, but we could not update the payment record. Please contact support.",
-              paymentVerified: true,
-              refunded: true,
-              razorpayOrderId,
-            },
-            { status: 500 }
-          );
-        }
-
-        return NextResponse.json(
-          {
-            success: false,
-            verified: true,
-            refunded: true,
-            error:
-              "Payment was received, but the item became unavailable. Your payment has been refunded.",
-            razorpayOrderId,
-            razorpayPaymentId,
-          },
-          { status: 409 }
-        );
       }
 
       /*
-       * Any other database error is NOT automatically refunded.
+       * Any other database error is NOT automatically
+       * refunded.
        *
        * The payment remains "paid" so it can be
        * recovered/retried instead of accidentally
@@ -467,7 +873,7 @@ export async function POST(req: NextRequest) {
     }
 
     /*
-     * 13. Get the newly-created order.
+     * 15. Get the newly-created order.
      */
     const {
       data: completedOrder,
@@ -515,13 +921,11 @@ export async function POST(req: NextRequest) {
     }
 
     /*
-     * 14. Everything completed successfully.
+     * 16. Everything completed successfully.
      */
     return NextResponse.json({
       success: true,
-
       verified: true,
-
       completed: true,
 
       alreadyCompleted:
@@ -530,7 +934,9 @@ export async function POST(req: NextRequest) {
 
       razorpayOrderId,
 
-      razorpayPaymentId,
+      razorpayPaymentId:
+        paymentAttempt.razorpay_payment_id ||
+        razorpayPaymentId,
 
       orderId: completedOrder.id,
 

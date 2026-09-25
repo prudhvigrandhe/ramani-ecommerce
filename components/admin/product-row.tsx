@@ -12,13 +12,21 @@ export default function ProductRow({ product }: Props) {
   return (
     <tr className="border-b">
       <td className="p-4">
-        <Image
-          src={product.image}
-          alt={product.name}
-          width={60}
-          height={60}
-          className="rounded-lg object-cover"
-        />
+        <div className="relative h-[60px] w-[60px] overflow-hidden rounded-lg bg-gray-100">
+          {product.image ? (
+            <Image
+              src={product.image}
+              alt={product.name}
+              fill
+              sizes="60px"
+              className="object-cover"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center text-[10px] text-gray-400">
+              No image
+            </div>
+          )}
+        </div>
       </td>
 
       <td className="p-4 font-medium">
@@ -38,29 +46,31 @@ export default function ProductRow({ product }: Props) {
       </td>
 
       <td className="p-4">
-  <div className="flex gap-3">
-  <Link
-  href={`/admin/edit-product/${product.id}`}
-  className="text-blue-600"
->
-  <Pencil className="h-5 w-5" />
-</Link>
+        <div className="flex gap-3">
+          <Link
+            href={`/admin/edit-product/${product.id}`}
+            className="text-blue-600 transition hover:text-blue-800"
+            title="Edit product"
+          >
+            <Pencil className="h-5 w-5" />
+          </Link>
 
-    <form
-      action={async () => {
-        "use server";
-        await deleteProduct(product.id);
-      }}
-    >
-      <button
-        type="submit"
-        className="text-red-600"
-      >
-        <Trash2 className="h-5 w-5" />
-      </button>
-    </form>
-  </div>
-</td>
+          <form
+            action={async () => {
+              "use server";
+              await deleteProduct(product.id);
+            }}
+          >
+            <button
+              type="submit"
+              className="text-red-600 transition hover:text-red-800"
+              title="Delete product"
+            >
+              <Trash2 className="h-5 w-5" />
+            </button>
+          </form>
+        </div>
+      </td>
     </tr>
   );
 }

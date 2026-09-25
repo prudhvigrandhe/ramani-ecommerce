@@ -22,37 +22,37 @@ const categories = [
 
 export default function CategoryGrid() {
   return (
-    <section className="mx-auto max-w-[1600px] px-4 py-24">
-      <div className="mb-12 text-center">
-        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#5B214B]">
+    <section className="mx-auto max-w-[1600px] px-3 py-12 sm:px-4 sm:py-16 lg:py-24">
+      <div className="mb-8 text-center sm:mb-12">
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#5B214B] sm:text-sm sm:tracking-[0.3em]">
           Shop By Category
         </p>
 
-        <h2 className="mt-3 text-4xl font-bold text-gray-900">
+        <h2 className="mt-2 text-3xl font-bold text-gray-900 sm:mt-3 sm:text-4xl">
           Find Your Style
         </h2>
       </div>
 
-      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 xl:gap-10">
+      <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4 xl:gap-10">
         {categories.map((category) => (
           <Link
             key={category.title}
             href={`/products?category=${encodeURIComponent(category.title)}`}
             className="group"
           >
-            <div className="overflow-hidden rounded-3xl border bg-white shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
-              <div className="relative aspect-[3/4]">
+            <div className="overflow-hidden rounded-2xl border bg-white shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl sm:rounded-3xl">
+              <div className="relative aspect-[4/5]">
                 <Image
                   src={category.image}
                   alt={category.title}
                   fill
-                  sizes="(max-width:768px)100vw,25vw"
+                  sizes="(max-width:640px)50vw,(max-width:1024px)50vw,25vw"
                   className="object-cover transition duration-500 group-hover:scale-110"
                 />
               </div>
 
-              <div className="bg-white py-5 text-center">
-                <h3 className="text-xl font-semibold text-gray-900">
+              <div className="bg-white py-3 text-center sm:py-5">
+                <h3 className="text-base font-semibold text-gray-900 sm:text-xl">
                   {category.title}
                 </h3>
               </div>

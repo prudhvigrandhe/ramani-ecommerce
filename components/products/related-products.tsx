@@ -17,12 +17,12 @@ export default async function RelatedProducts({
   if (relatedProducts.length === 0) return null;
 
   return (
-    <section className="mt-20">
-      <h2 className="mb-8 text-3xl font-bold">
+    <section className="mt-12 sm:mt-20">
+      <h2 className="mb-6 text-2xl font-bold sm:mb-8 sm:text-3xl">
         You May Also Like
       </h2>
 
-      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4 lg:gap-8">
         {relatedProducts.map((product) => (
           <ProductCard
             key={product.id}

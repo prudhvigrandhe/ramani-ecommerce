@@ -8,27 +8,27 @@ export default async function TrendingProducts() {
     .filter((product) => product.is_trending)
     .slice(0, 4);
 
-  if (trending.length === 0) {
+  if (trending.length < 2) {
     return null;
   }
 
   return (
-    <section className="mx-auto mt-20 max-w-7xl px-4">
-      <div className="mb-10 text-center">
-        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-[#5B214B]">
+    <section className="mx-auto mt-12 max-w-7xl px-3 sm:mt-16 sm:px-4 lg:mt-20">
+      <div className="mb-7 text-center sm:mb-10">
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#5B214B] sm:text-sm sm:tracking-[0.35em]">
           Trending Collection
         </p>
 
-        <h2 className="mt-3 text-4xl font-bold">
+        <h2 className="mt-2 text-3xl font-bold sm:mt-3 sm:text-4xl">
           🔥 Trending This Week
         </h2>
 
-        <p className="mt-4 text-gray-500">
+        <p className="mt-2 text-sm text-gray-500 sm:mt-4 sm:text-base">
           Discover the styles everyone is loving right now.
         </p>
       </div>
 
-      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4 lg:gap-8">
         {trending.map((product) => (
           <ProductCard
             key={product.id}

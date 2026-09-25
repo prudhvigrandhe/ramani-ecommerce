@@ -8,27 +8,27 @@ export default async function BestSellers() {
     .filter((product) => product.is_best_seller)
     .slice(0, 4);
 
-  if (bestSellers.length === 0) {
-    return null;
-  }
+    if (bestSellers.length < 2) {
+      return null;
+    }
 
   return (
-    <section className="mx-auto max-w-[1600px] px-4 py-24">
-      <div className="mb-12 text-center">
-        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#5B214B]">
+    <section className="mx-auto max-w-[1600px] px-3 py-12 sm:px-4 sm:py-16 lg:py-24">
+      <div className="mb-7 text-center sm:mb-12">
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#5B214B] sm:text-sm sm:tracking-[0.3em]">
           Best Sellers
         </p>
 
-        <h2 className="mt-3 text-4xl font-bold">
+        <h2 className="mt-2 text-3xl font-bold sm:mt-3 sm:text-4xl">
           Customer Favorites
         </h2>
 
-        <p className="mt-4 text-gray-500">
+        <p className="mt-2 text-sm text-gray-500 sm:mt-4 sm:text-base">
           Our most loved products, chosen by you.
         </p>
       </div>
 
-      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4 lg:gap-8">
         {bestSellers.map((product) => (
           <ProductCard
             key={product.id}
