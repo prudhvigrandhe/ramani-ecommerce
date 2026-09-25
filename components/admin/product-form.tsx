@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+
 import CategorySelect from "./category-select";
 import ProductImagesUpload from "./product-images-upload";
 
@@ -24,6 +28,68 @@ export default function ProductForm({
   action,
   product,
 }: Props) {
+  const [selectedSizes, setSelectedSizes] =
+    useState<Record<string, boolean>>(() => {
+      const initial: Record<string, boolean> = {};
+
+      for (const size of availableSizes) {
+        initial[size] =
+          product?.availableSizes?.includes(size) ??
+          false;
+      }
+
+      return initial;
+    });
+
+  const [sizeQuantities, setSizeQuantities] =
+    useState<Record<string, number>>(() => {
+      const initial: Record<string, number> = {};
+
+      for (const size of availableSizes) {
+        initial[size] =
+          product?.sizeStock?.[size] ?? 0;
+      }
+
+      return initial;
+    });
+
+  function handleSizeToggle(
+    size: string,
+    checked: boolean
+  ) {
+    setSelectedSizes((previous) => ({
+      ...previous,
+      [size]: checked,
+    }));
+
+    /*
+     * If a size is unchecked, immediately
+     * reset its quantity to 0.
+     */
+    if (!checked) {
+      setSizeQuantities((previous) => ({
+        ...previous,
+        [size]: 0,
+      }));
+    }
+  }
+
+  function handleQuantityChange(
+    size: string,
+    value: string
+  ) {
+    const quantity = Number(value);
+
+    setSizeQuantities((previous) => ({
+      ...previous,
+      [size]:
+        Number.isFinite(quantity) &&
+        quantity >= 0
+          ? Math.floor(quantity)
+          : 0,
+    }));
+  }
+
   return (
     <form
       action={action}
@@ -155,13 +221,17 @@ export default function ProductForm({
         </h3>
 
         <p className="mb-5 text-sm text-gray-500">
-          Select the sizes available and enter the quantity for each size.
+          Select the sizes available and enter the
+          quantity for each size.
         </p>
 
         <div className="space-y-3">
           {availableSizes.map((size) => {
-            const currentStock =
-              product?.sizeStock?.[size] ?? 0;
+            const isSelected =
+              selectedSizes[size] ?? false;
+
+            const quantity =
+              sizeQuantities[size] ?? 0;
 
             return (
               <div
@@ -173,9 +243,12 @@ export default function ProductForm({
                     type="checkbox"
                     name="available_sizes"
                     value={size}
-                    defaultChecked={
-                      product?.availableSizes?.includes(size) ??
-                      false
+                    checked={isSelected}
+                    onChange={(event) =>
+                      handleSizeToggle(
+                        size,
+                        event.target.checked
+                      )
                     }
                     className="h-4 w-4"
                   />
@@ -195,8 +268,15 @@ export default function ProductForm({
                     name={`stock_${size}`}
                     min="0"
                     step="1"
-                    defaultValue={currentStock}
-                    className="w-24 rounded-lg border p-2 text-center"
+                    value={quantity}
+                    disabled={!isSelected}
+                    onChange={(event) =>
+                      handleQuantityChange(
+                        size,
+                        event.target.value
+                      )
+                    }
+                    className="w-24 rounded-lg border p-2 text-center disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
                   />
                 </div>
               </div>
@@ -221,7 +301,9 @@ export default function ProductForm({
             <input
               type="checkbox"
               name="is_trending"
-              defaultChecked={product?.is_trending}
+              defaultChecked={
+                product?.is_trending
+              }
               className="h-5 w-5"
             />
             <span>Trending Collection</span>
@@ -231,7 +313,9 @@ export default function ProductForm({
             <input
               type="checkbox"
               name="is_best_seller"
-              defaultChecked={product?.is_best_seller}
+              defaultChecked={
+                product?.is_best_seller
+              }
               className="h-5 w-5"
             />
             <span>Best Seller</span>
@@ -241,7 +325,9 @@ export default function ProductForm({
             <input
               type="checkbox"
               name="is_new_arrival"
-              defaultChecked={product?.is_new_arrival}
+              defaultChecked={
+                product?.is_new_arrival
+              }
               className="h-5 w-5"
             />
             <span>New Arrival</span>
@@ -253,7 +339,9 @@ export default function ProductForm({
         type="submit"
         className="w-full rounded-xl bg-[#5B214B] py-4 font-semibold text-white"
       >
-        {product ? "Update Product" : "Add Product"}
+        {product
+          ? "Update Product"
+          : "Add Product"}
       </button>
     </form>
   );

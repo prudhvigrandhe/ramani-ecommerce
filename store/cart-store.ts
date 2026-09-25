@@ -60,16 +60,20 @@ export const useCartStore = create<CartStore>()(
       ) => {
         const items = [...get().items];
 
-        if (!Number.isInteger(quantity) || quantity <= 0) {
+        if (
+          !Number.isInteger(quantity) ||
+          quantity <= 0
+        ) {
           toast.error("Invalid quantity.");
           return;
         }
 
         /*
-         * Check the available stock for the selected size.
+         * Always use the latest product stock
+         * received by this function.
          */
         const availableStock =
-          product.sizeStock?.[size] ?? 0;
+          Number(product.sizeStock?.[size] ?? 0);
 
         if (availableStock <= 0) {
           toast.error(
@@ -78,17 +82,20 @@ export const useCartStore = create<CartStore>()(
           return;
         }
 
-        const existing = items.find(
-          (item) =>
-            item.id === product.id &&
-            item.size === size
-        );
+        const existingIndex =
+          items.findIndex(
+            (item) =>
+              item.id === product.id &&
+              item.size === size
+          );
 
         /*
-         * If the same product + size is already
-         * in the cart, increase its quantity.
+         * Same product + same size already exists.
          */
-        if (existing) {
+        if (existingIndex !== -1) {
+          const existing =
+            items[existingIndex];
+
           const newQuantity =
             existing.quantity + quantity;
 
@@ -103,7 +110,19 @@ export const useCartStore = create<CartStore>()(
             return;
           }
 
-          existing.quantity = newQuantity;
+          /*
+           * IMPORTANT:
+           * Replace the old product snapshot with
+           * the latest product data.
+           *
+           * This refreshes sizeStock inside the
+           * persisted cart item.
+           */
+          items[existingIndex] = {
+            ...product,
+            quantity: newQuantity,
+            size,
+          };
 
           set({ items });
 
@@ -115,8 +134,7 @@ export const useCartStore = create<CartStore>()(
         }
 
         /*
-         * Make sure the requested quantity
-         * doesn't exceed available stock.
+         * New cart item.
          */
         if (quantity > availableStock) {
           toast.error(
@@ -175,14 +193,21 @@ export const useCartStore = create<CartStore>()(
 
         if (!item) return;
 
-        /*
-         * Get the latest stock value stored
-         * with this product in the cart.
-         */
         const availableStock =
-          item.sizeStock?.[size] ?? 0;
+          Number(item.sizeStock?.[size] ?? 0);
 
-        if (item.quantity >= availableStock) {
+        if (
+          availableStock <= 0
+        ) {
+          toast.error(
+            `Sorry, ${size} is currently out of stock.`
+          );
+          return;
+        }
+
+        if (
+          item.quantity >= availableStock
+        ) {
           toast.error(
             `Only ${availableStock} ${
               availableStock === 1
@@ -193,7 +218,7 @@ export const useCartStore = create<CartStore>()(
           return;
         }
 
-        item.quantity++;
+        item.quantity += 1;
 
         set({ items });
       },
@@ -230,7 +255,7 @@ export const useCartStore = create<CartStore>()(
           return;
         }
 
-        item.quantity--;
+        item.quantity -= 1;
 
         set({ items });
       },

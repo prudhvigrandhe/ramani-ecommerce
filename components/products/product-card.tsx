@@ -105,25 +105,31 @@ export default function ProductCard({ product }: Props) {
       <div className="group overflow-hidden rounded-2xl border bg-white shadow-md transition duration-300 hover:-translate-y-3 hover:shadow-2xl sm:rounded-3xl">
 
         {/* Product Image */}
-        <div className="relative aspect-[3/4] overflow-hidden sm:aspect-[4/5]">
+        <div className="relative aspect-[3/4] overflow-hidden bg-gray-100 sm:aspect-[4/5]">
 
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            sizes="(max-width:640px)50vw,(max-width:768px)50vw,25vw"
-            className="object-cover transition duration-500 group-hover:scale-105"
-          />
+  {product.image ? (
+    <Image
+      src={product.image}
+      alt={product.name}
+      fill
+      sizes="(max-width:640px)50vw,(max-width:768px)50vw,25vw"
+      className="object-cover transition duration-500 group-hover:scale-105"
+    />
+  ) : (
+    <div className="flex h-full items-center justify-center text-sm text-gray-400">
+      No image
+    </div>
+  )}
 
-          {/* View Details - Desktop */}
-          <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all duration-300 group-hover:bg-black/20 group-hover:opacity-100">
+  {/* View Details - Desktop */}
+  <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all duration-300 group-hover:bg-black/20 group-hover:opacity-100">
 
-            <div className="hidden items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-medium shadow-lg sm:flex">
-              <Eye className="h-5 w-5" />
-              View Details
-            </div>
+    <div className="hidden items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-medium shadow-lg sm:flex">
+      <Eye className="h-5 w-5" />
+      View Details
+    </div>
 
-          </div>
+  </div>
 
           {/* Wishlist */}
           <div className="absolute right-1.5 top-1.5 sm:right-3 sm:top-3">
