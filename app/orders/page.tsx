@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import OrderStatusTimeline from "@/components/orders/order-status-timeline";
+import CancelOrderButton from "@/components/orders/cancel-order-button";
 
 type OrderItem = {
   id: number;
@@ -35,6 +36,7 @@ type Order = {
   order_status: string;
   order_number: string;
   items: OrderItem[];
+  accessToken: string;
 };
 
 const ORDER_TOKENS_KEY = "ramani-order-tokens";
@@ -81,7 +83,10 @@ export default function OrdersPage() {
                 return null;
               }
 
-              return data.order as Order;
+              return {
+                ...data.order,
+                accessToken: token,
+              } as Order;
             } catch {
               return null;
             }
@@ -362,6 +367,14 @@ export default function OrdersPage() {
                 </div>
               </div>
             </div>
+            <CancelOrderButton
+  orderId={order.id}
+  token={order.accessToken}
+  orderStatus={order.order_status}
+  onCancelled={() => {
+    window.location.reload();
+  }}
+/>
           </div>
         ))}
       </div>
