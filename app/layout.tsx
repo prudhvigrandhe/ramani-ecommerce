@@ -19,8 +19,39 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ramani",
-  description: "Women's Fashion Store",
+  metadataBase: new URL("https://ramani-ecommerce.vercel.app"),
+
+  title: {
+    default: "Ramani | Women's Fashion",
+    template: "%s | Ramani",
+  },
+
+  description:
+    "Shop women's fashion at Ramani — discover sarees, dresses, kurtas, tops and more, designed for every occasion.",
+
+  applicationName: "Ramani",
+
+  openGraph: {
+    title: "Ramani | Women's Fashion",
+    description:
+      "Discover elegant women's fashion at Ramani — sarees, dresses, kurtas, tops and more.",
+    url: "https://ramani-ecommerce.vercel.app",
+    siteName: "Ramani",
+    locale: "en_IN",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Ramani | Women's Fashion",
+    description:
+      "Discover elegant women's fashion at Ramani — sarees, dresses, kurtas, tops and more.",
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
