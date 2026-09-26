@@ -31,43 +31,134 @@ function getSizeStock(formData: FormData) {
   return sizeStock;
 }
 
+function isValidImageUrl(value: string) {
+  if (!value) {
+    return false;
+  }
+
+  try {
+    const url = new URL(value);
+
+    return (
+      url.protocol === "https:" &&
+      url.pathname.length > 1
+    );
+  } catch {
+    return false;
+  }
+}
+
+function getProductImages(formData: FormData) {
+  const image = String(
+    formData.get("image") ?? ""
+  ).trim();
+
+  if (!isValidImageUrl(image)) {
+    throw new Error(
+      "A valid main product image is required."
+    );
+  }
+
+  let images: string[];
+
+  try {
+    images = JSON.parse(
+      String(formData.get("images") ?? "[]")
+    );
+  } catch {
+    throw new Error("Invalid gallery images.");
+  }
+
+  if (!Array.isArray(images)) {
+    throw new Error("Invalid gallery images.");
+  }
+
+  const validGalleryImages = images.filter(
+    (item): item is string =>
+      typeof item === "string" &&
+      isValidImageUrl(item)
+  );
+
+  if (validGalleryImages.length !== images.length) {
+    throw new Error(
+      "One or more gallery images are invalid."
+    );
+  }
+
+  return {
+    image,
+    images: validGalleryImages,
+  };
+}
+
 export async function addProduct(formData: FormData) {
   await requireAdmin();
-  const name = formData.get("name") as string;
+
+  const name = String(
+    formData.get("name") ?? ""
+  ).trim();
+
   const price = Number(formData.get("price"));
+
   const originalPrice = Number(
     formData.get("originalPrice")
   );
-  const rating = Number(formData.get("rating"));
-  const description = formData.get(
-    "description"
-  ) as string;
+
+  const rating = Number(
+    formData.get("rating")
+  );
+
+  const description = String(
+    formData.get("description") ?? ""
+  );
+
   const categoryId = Number(
     formData.get("category")
   );
 
-  const image = formData.get("image") as string;
+  const {
+    image,
+    images,
+  } = getProductImages(formData);
 
-  const images = JSON.parse(
-    (formData.get("images") as string) || "[]"
-  );
-
-  const availableSizes = formData.getAll(
+  const selectedSizes = formData.getAll(
     "available_sizes"
   ) as string[];
 
-  // Build size-wise inventory
   const sizeStock = getSizeStock(formData);
 
   // Product Specifications
-  const fabric = formData.get("fabric") as string;
-  const fit = formData.get("fit") as string;
-  const occasion = formData.get("occasion") as string;
-  const sleeve = formData.get("sleeve") as string;
-  const washCare = formData.get("wash_care") as string;
-  const color = formData.get("color") as string;
-  const pattern = formData.get("pattern") as string;
-  const sku = formData.get("sku") as string;
+  const fabric = String(
+    formData.get("fabric") ?? ""
+  );
+
+  const fit = String(
+    formData.get("fit") ?? ""
+  );
+
+  const occasion = String(
+    formData.get("occasion") ?? ""
+  );
+
+  const sleeve = String(
+    formData.get("sleeve") ?? ""
+  );
+
+  const washCare = String(
+    formData.get("wash_care") ?? ""
+  );
+
+  const color = String(
+    formData.get("color") ?? ""
+  );
+
+  const pattern = String(
+    formData.get("pattern") ?? ""
+  );
+
+  const sku = String(
+    formData.get("sku") ?? ""
+  );
 
   const isTrending =
     formData.get("is_trending") === "on";
@@ -89,11 +180,12 @@ export async function addProduct(formData: FormData) {
       images,
       description,
 
-      stock: Object.keys(sizeStock).length > 0,
+      stock:
+        Object.keys(sizeStock).length > 0,
 
       category_id: categoryId,
 
-      available_sizes: availableSizes,
+      available_sizes: selectedSizes,
 
       size_stock: sizeStock,
 
@@ -124,6 +216,7 @@ export async function addProduct(formData: FormData) {
 
 export async function deleteProduct(id: number) {
   await requireAdmin();
+
   const { error } = await supabase
     .from("products")
     .delete()
@@ -143,41 +236,72 @@ export async function updateProduct(
   formData: FormData
 ) {
   await requireAdmin();
-  const name = formData.get("name") as string;
+
+  const name = String(
+    formData.get("name") ?? ""
+  ).trim();
+
   const price = Number(formData.get("price"));
+
   const originalPrice = Number(
     formData.get("originalPrice")
   );
-  const rating = Number(formData.get("rating"));
-  const description = formData.get(
-    "description"
-  ) as string;
+
+  const rating = Number(
+    formData.get("rating")
+  );
+
+  const description = String(
+    formData.get("description") ?? ""
+  );
+
   const categoryId = Number(
     formData.get("category")
   );
 
-  const image = formData.get("image") as string;
+  const {
+    image,
+    images,
+  } = getProductImages(formData);
 
-  const images = JSON.parse(
-    (formData.get("images") as string) || "[]"
-  );
-
-  const availableSizes = formData.getAll(
+  const selectedSizes = formData.getAll(
     "available_sizes"
   ) as string[];
 
-  // Build size-wise inventory
   const sizeStock = getSizeStock(formData);
 
   // Product Specifications
-  const fabric = formData.get("fabric") as string;
-  const fit = formData.get("fit") as string;
-  const occasion = formData.get("occasion") as string;
-  const sleeve = formData.get("sleeve") as string;
-  const washCare = formData.get("wash_care") as string;
-  const color = formData.get("color") as string;
-  const pattern = formData.get("pattern") as string;
-  const sku = formData.get("sku") as string;
+  const fabric = String(
+    formData.get("fabric") ?? ""
+  );
+
+  const fit = String(
+    formData.get("fit") ?? ""
+  );
+
+  const occasion = String(
+    formData.get("occasion") ?? ""
+  );
+
+  const sleeve = String(
+    formData.get("sleeve") ?? ""
+  );
+
+  const washCare = String(
+    formData.get("wash_care") ?? ""
+  );
+
+  const color = String(
+    formData.get("color") ?? ""
+  );
+
+  const pattern = String(
+    formData.get("pattern") ?? ""
+  );
+
+  const sku = String(
+    formData.get("sku") ?? ""
+  );
 
   const isTrending =
     formData.get("is_trending") === "on";
@@ -201,11 +325,12 @@ export async function updateProduct(
       image,
       images,
 
-      available_sizes: availableSizes,
+      available_sizes: selectedSizes,
 
       size_stock: sizeStock,
 
-      stock: Object.keys(sizeStock).length > 0,
+      stock:
+        Object.keys(sizeStock).length > 0,
 
       fabric,
       fit,

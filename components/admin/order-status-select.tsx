@@ -9,14 +9,14 @@ type Props = {
   currentStatus: string;
 };
 
-const statuses = [
-  "Pending",
-  "Confirmed",
-  "Packed",
-  "Shipped",
-  "Delivered",
-  "Cancelled",
-];
+const allowedTransitions: Record<string, string[]> = {
+  Pending: ["Confirmed", "Cancelled"],
+  Confirmed: ["Packed", "Cancelled"],
+  Packed: ["Shipped"],
+  Shipped: ["Delivered"],
+  Delivered: [],
+  Cancelled: [],
+};
 
 export default function OrderStatusSelect({
   orderId,
@@ -24,12 +24,36 @@ export default function OrderStatusSelect({
 }: Props) {
   const router = useRouter();
 
-  const [status, setStatus] = useState(currentStatus);
+  const availableStatuses =
+    allowedTransitions[currentStatus] ?? [];
+
+  const [status, setStatus] = useState(
+    availableStatuses[0] ?? currentStatus
+  );
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
+  const canUpdate = availableStatuses.length > 0;
+  const isCancelling = status === "Cancelled";
+
   async function handleSave() {
-    if (status === currentStatus) return;
+    if (!canUpdate || status === currentStatus) {
+      return;
+    }
+
+    if (isCancelling) {
+      const confirmed = window.confirm(
+        "Cancel this order?\n\n" +
+          "If the order has been paid, Ramani will attempt to refund the payment.\n" +
+          "The purchased inventory will also be restored.\n\n" +
+          "Continue?"
+      );
+
+      if (!confirmed) {
+        return;
+      }
+    }
 
     try {
       setLoading(true);
@@ -37,16 +61,29 @@ export default function OrderStatusSelect({
 
       await updateOrderStatus(orderId, status);
 
-      setMessage("✅ Order status updated successfully!");
+      if (isCancelling) {
+        setMessage(
+          "✅ Order cancelled. Refund processed successfully."
+        );
+      } else {
+        setMessage(
+          "✅ Order status updated successfully!"
+        );
+      }
 
       router.refresh();
 
       setTimeout(() => {
         setMessage("");
-      }, 3000);
+      }, 4000);
     } catch (error) {
       console.error(error);
-      setMessage("❌ Failed to update order status.");
+
+      setMessage(
+        error instanceof Error
+          ? `❌ ${error.message}`
+          : "❌ Failed to update order status."
+      );
     } finally {
       setLoading(false);
     }
@@ -58,38 +95,67 @@ export default function OrderStatusSelect({
         Order Status
       </h2>
 
-      <div className="flex flex-col gap-4 sm:flex-row">
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="rounded-lg border px-4 py-2 focus:border-[#5B214B] focus:outline-none"
-        >
-          {statuses.map((item) => (
-            <option key={item} value={item}>
-              {item}
-            </option>
-          ))}
-        </select>
-
-        <button
-          onClick={handleSave}
-          disabled={loading || status === currentStatus}
-          className="rounded-lg bg-[#5B214B] px-6 py-2 font-semibold text-white transition hover:bg-[#431736] disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {loading ? "Saving..." : "Save"}
-        </button>
-      </div>
-
-      {message && (
-        <p
-          className={`mt-4 text-sm font-medium ${
-            message.startsWith("✅")
-              ? "text-green-600"
-              : "text-red-600"
-          }`}
-        >
-          {message}
+      {!canUpdate ? (
+        <p className="text-sm text-gray-500">
+          This order has reached its final status.
         </p>
+      ) : (
+        <>
+          <div className="flex flex-col gap-4 sm:flex-row">
+            <select
+              value={status}
+              onChange={(e) =>
+                setStatus(e.target.value)
+              }
+              disabled={loading}
+              className="rounded-lg border px-4 py-2 focus:border-[#5B214B] focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100"
+            >
+              {availableStatuses.map((item) => (
+                <option
+                  key={item}
+                  value={item}
+                >
+                  {item}
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={handleSave}
+              disabled={loading}
+              className={`rounded-lg px-6 py-2 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                isCancelling
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-[#5B214B] hover:bg-[#431736]"
+              }`}
+            >
+              {loading
+                ? "Processing..."
+                : isCancelling
+                  ? "Cancel Order"
+                  : "Save"}
+            </button>
+          </div>
+
+          {isCancelling && (
+            <p className="mt-3 text-sm text-red-600">
+              Cancelling a paid order will attempt to
+              refund the payment and restore inventory.
+            </p>
+          )}
+
+          {message && (
+            <p
+              className={`mt-4 text-sm font-medium ${
+                message.startsWith("✅")
+                  ? "text-green-600"
+                  : "text-red-600"
+              }`}
+            >
+              {message}
+            </p>
+          )}
+        </>
       )}
     </div>
   );
