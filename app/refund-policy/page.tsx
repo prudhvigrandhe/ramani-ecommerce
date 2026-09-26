@@ -1,85 +1,142 @@
+import Link from "next/link";
+
 export default function RefundPolicyPage() {
-    return (
-      <main className="mx-auto max-w-5xl px-4 py-14">
-  
-        <section className="rounded-3xl bg-gradient-to-r from-[#5B214B] to-[#7A3465] px-8 py-16 text-center text-white shadow-xl">
-  
-          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.4em]">
-            Refund & Cancellation Policy
+  return (
+    <main className="mx-auto max-w-4xl px-6 py-12">
+      <div className="mb-10">
+        <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#5B214B]">
+          Ramani
+        </p>
+
+        <h1 className="mt-3 text-4xl font-bold">
+          Cancellation & Refund Policy
+        </h1>
+
+        <p className="mt-3 text-gray-500">
+          Last updated: September 2026
+        </p>
+      </div>
+
+      <div className="space-y-10 leading-7 text-gray-700">
+        <section>
+          <h2 className="mb-3 text-2xl font-semibold text-gray-900">
+            1. Order Cancellation
+          </h2>
+
+          <p>
+            Customers may cancel an order while the order is in
+            <strong> Pending </strong>
+            or
+            <strong> Confirmed </strong>
+            status.
           </p>
-  
-          <h1 className="text-5xl font-bold">
-            Refund & Cancellation
-          </h1>
-  
-          <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-white/90">
-            Please read our refund and cancellation policy carefully before placing an order.
+
+          <p className="mt-3">
+            Once an order has been packed or shipped, it can no
+            longer be cancelled through the Ramani website.
           </p>
-  
         </section>
-  
-        <div className="mt-12 space-y-8">
-  
-          <div className="rounded-2xl border bg-white p-8 shadow-sm">
-            <h2 className="mb-3 text-2xl font-semibold">
-              Order Confirmation
-            </h2>
-  
-            <p className="leading-8 text-gray-600">
-              Orders are confirmed only after successful online payment.
-            </p>
-          </div>
-  
-          <div className="rounded-2xl border bg-white p-8 shadow-sm">
-            <h2 className="mb-3 text-2xl font-semibold">
-              Order Cancellation
-            </h2>
-  
-            <p className="leading-8 text-gray-600">
-              Once an order has been confirmed, cancellation requests may not be
-              possible if the order has already been processed or dispatched.
-              Please contact our support team as soon as possible if you need assistance.
-            </p>
-          </div>
-  
-          <div className="rounded-2xl border bg-white p-8 shadow-sm">
-            <h2 className="mb-3 text-2xl font-semibold">
-              Returns & Exchanges
-            </h2>
-  
-            <p className="leading-8 text-gray-600">
-              We currently do not offer returns or exchanges on delivered products.
-              We encourage customers to review product details, sizing information,
-              and images carefully before placing an order.
-            </p>
-          </div>
-  
-          <div className="rounded-2xl border bg-white p-8 shadow-sm">
-            <h2 className="mb-3 text-2xl font-semibold">
-              Damaged or Incorrect Products
-            </h2>
-  
-            <p className="leading-8 text-gray-600">
-              If you receive a damaged, defective, or incorrect product,
-              please contact us within 48 hours of delivery with clear photos.
-              Our team will review the issue and provide an appropriate resolution.
-            </p>
-          </div>
-  
-          <div className="rounded-2xl border bg-white p-8 shadow-sm">
-            <h2 className="mb-3 text-2xl font-semibold">
-              Refunds
-            </h2>
-  
-            <p className="leading-8 text-gray-600">
-              Refunds are processed only if an order cannot be fulfilled by Ramani
-              or if a refund is approved after reviewing a damaged or incorrect item.
-              Approved refunds will be credited to the original payment method.
-            </p>
-          </div>
-  
-        </div>
-  
-      </main>
-    );
-  }
+
+        <section>
+          <h2 className="mb-3 text-2xl font-semibold text-gray-900">
+            2. Refunds for Cancelled Orders
+          </h2>
+
+          <p>
+            If a cancelled order has already been paid for online,
+            Ramani will initiate a refund to the original payment
+            method.
+          </p>
+
+          <p className="mt-3">
+            The refund amount will correspond to the amount paid for
+            the cancelled order.
+          </p>
+
+          <p className="mt-3">
+            Once the refund is successfully processed through our
+            payment provider, the time taken for the amount to appear
+            in the customer's account may depend on the customer's
+            bank or payment provider.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="mb-3 text-2xl font-semibold text-gray-900">
+            3. No Product Returns
+          </h2>
+
+          <p>
+            Ramani currently does not accept product returns after an
+            order has been delivered.
+          </p>
+
+          <p className="mt-3">
+            Customers are encouraged to carefully review product
+            details, available sizes, and other information before
+            placing an order.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="mb-3 text-2xl font-semibold text-gray-900">
+            4. Orders That Cannot Be Cancelled
+          </h2>
+
+          <p>
+            Cancellation is not available once an order has reached
+            the Packed or Shipped stage.
+          </p>
+
+          <p className="mt-3">
+            This is because the order may already have entered our
+            fulfilment or courier process.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="mb-3 text-2xl font-semibold text-gray-900">
+            5. Refund Status
+          </h2>
+
+          <p>
+            Customers can view the payment and order status from the
+            My Orders section of the Ramani website.
+          </p>
+
+          <p className="mt-3">
+            If a refund has been initiated but the amount has not yet
+            appeared in the customer's account, please allow additional
+            processing time for the payment provider or bank.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="mb-3 text-2xl font-semibold text-gray-900">
+            6. Contact Us
+          </h2>
+
+          <p>
+            If you have a question about a cancellation or refund,
+            please contact Ramani using the contact details provided
+            on our website.
+          </p>
+
+          <p className="mt-3">
+            Please include your order number when contacting us so that
+            we can locate your order quickly.
+          </p>
+        </section>
+      </div>
+
+      <div className="mt-12 border-t pt-8">
+        <Link
+          href="/"
+          className="font-semibold text-[#5B214B] hover:underline"
+        >
+          ← Back to Ramani
+        </Link>
+      </div>
+    </main>
+  );
+}

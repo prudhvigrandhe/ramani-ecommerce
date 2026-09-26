@@ -96,19 +96,39 @@ export default function Footer() {
 
             <ul className="space-y-3 text-gray-600">
               <li>
-              <Link href="/contact">Contact Us</Link>
+                <Link
+                  href="/contact"
+                  className="hover:text-[#5B214B]"
+                >
+                  Contact Us
+                </Link>
               </li>
 
               <li>
-              <Link href="/shipping-policy">Shipping Policy</Link>
+                <Link
+                  href="/shipping-policy"
+                  className="hover:text-[#5B214B]"
+                >
+                  Shipping Policy
+                </Link>
               </li>
 
               <li>
-              <Link href="/refund-policy">Refund & Cancellation</Link>
+                <Link
+                  href="/refund-policy"
+                  className="hover:text-[#5B214B]"
+                >
+                  Refund & Cancellation
+                </Link>
               </li>
 
               <li>
-              <Link href="/privacy-policy">Privacy Policy</Link>
+                <Link
+                  href="/privacy"
+                  className="hover:text-[#5B214B]"
+                >
+                  Privacy Policy
+                </Link>
               </li>
             </ul>
           </div>
@@ -121,24 +141,30 @@ export default function Footer() {
 
             <ul className="space-y-3 text-gray-600">
               <li>
-              <Link href="/about">About Us</Link>
+                <Link
+                  href="/about"
+                  className="hover:text-[#5B214B]"
+                >
+                  About Us
+                </Link>
               </li>
 
               <li>
-              <Link href="/privacy-policy">Privacy Policy</Link>
+                <Link
+                  href="/terms"
+                  className="hover:text-[#5B214B]"
+                >
+                  Terms & Conditions
+                </Link>
               </li>
 
               <li>
-              <Link href="/terms">Terms & Conditions</Link>
-              </li>
-
-              <li>
-              <Link
-  href="/contact"
-  className="hover:text-[#5B214B]"
->
-  Contact Us
-</Link>
+                <Link
+                  href="/contact"
+                  className="hover:text-[#5B214B]"
+                >
+                  Contact Us
+                </Link>
               </li>
             </ul>
           </div>
