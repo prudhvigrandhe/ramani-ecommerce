@@ -1,8 +1,8 @@
 import Image from "next/image";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Eye } from "lucide-react";
 import { Product } from "@/lib/types";
-import { deleteProduct } from "@/app/admin/actions";
 import Link from "next/link";
+import DeleteProductButton from "./delete-product-button";
 
 type Props = {
   product: Product;
@@ -46,7 +46,29 @@ export default function ProductRow({ product }: Props) {
       </td>
 
       <td className="p-4">
+        {product.is_published ? (
+          <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+            Published
+          </span>
+        ) : (
+          <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-700">
+            Draft
+          </span>
+        )}
+      </td>
+
+      <td className="p-4">
         <div className="flex gap-3">
+          {!product.is_published && (
+            <Link
+              href={`/admin/preview-product/${product.id}`}
+              className="text-purple-600 transition hover:text-purple-800"
+              title="Preview product"
+            >
+              <Eye className="h-5 w-5" />
+            </Link>
+          )}
+
           <Link
             href={`/admin/edit-product/${product.id}`}
             className="text-blue-600 transition hover:text-blue-800"
@@ -55,20 +77,7 @@ export default function ProductRow({ product }: Props) {
             <Pencil className="h-5 w-5" />
           </Link>
 
-          <form
-            action={async () => {
-              "use server";
-              await deleteProduct(product.id);
-            }}
-          >
-            <button
-              type="submit"
-              className="text-red-600 transition hover:text-red-800"
-              title="Delete product"
-            >
-              <Trash2 className="h-5 w-5" />
-            </button>
-          </form>
+          <DeleteProductButton productId={product.id} />
         </div>
       </td>
     </tr>

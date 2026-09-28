@@ -207,6 +207,9 @@ export async function addProduct(formData: FormData) {
       is_trending: isTrending,
       is_best_seller: isBestSeller,
       is_new_arrival: isNewArrival,
+
+      // New products start as drafts.
+      is_published: false,
     });
 
   if (error) {
@@ -363,4 +366,130 @@ export async function updateProduct(
   revalidatePath(`/products/${id}`);
 
   redirect("/admin");
+}
+
+export async function publishProduct(id: number) {
+  await requireAdmin();
+
+  const { error } = await supabaseAdmin
+    .from("products")
+    .update({
+      is_published: true,
+    })
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/");
+  revalidatePath("/products");
+  revalidatePath("/admin");
+  revalidatePath(`/products/${id}`);
+
+  redirect("/admin");
+}
+
+export async function uploadProductImage(file: File) {
+  await requireAdmin();
+
+  if (!(file instanceof File)) {
+    throw new Error("Invalid image file.");
+  }
+
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Only image files are allowed.");
+  }
+
+  // Maximum 5 MB
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error("Image must be smaller than 5 MB.");
+  }
+
+  const extension =
+    file.name.includes(".")
+      ? file.name.split(".").pop()?.toLowerCase()
+      : "";
+
+  const allowedExtensions = [
+    "jpg",
+    "jpeg",
+    "png",
+    "webp",
+    "gif",
+  ];
+
+  if (
+    !extension ||
+    !allowedExtensions.includes(extension)
+  ) {
+    throw new Error(
+      "Only JPG, JPEG, PNG, WEBP, and GIF images are allowed."
+    );
+  }
+
+  const fileName = `${crypto.randomUUID()}.${extension}`;
+
+  const arrayBuffer = await file.arrayBuffer();
+
+  const { error } = await supabaseAdmin.storage
+    .from("products")
+    .upload(fileName, arrayBuffer, {
+      contentType: file.type,
+      upsert: false,
+    });
+
+  if (error) {
+    throw new Error(
+      `Image upload failed: ${error.message}`
+    );
+  }
+
+  const { data } = supabaseAdmin.storage
+    .from("products")
+    .getPublicUrl(fileName);
+
+  return {
+    fileName,
+    publicUrl: data.publicUrl,
+  };
+}
+
+export async function deleteProductImage(
+  publicUrl: string
+) {
+  await requireAdmin();
+
+  let url: URL;
+
+  try {
+    url = new URL(publicUrl);
+  } catch {
+    throw new Error("Invalid image URL.");
+  }
+
+  const expectedPrefix =
+    "/storage/v1/object/public/products/";
+
+  if (!url.pathname.startsWith(expectedPrefix)) {
+    throw new Error("Invalid product image path.");
+  }
+
+  const fileName = decodeURIComponent(
+    url.pathname.slice(expectedPrefix.length)
+  );
+
+  if (!fileName) {
+    throw new Error("Invalid product image path.");
+  }
+
+  const { error } = await supabaseAdmin.storage
+    .from("products")
+    .remove([fileName]);
+
+  if (error) {
+    throw new Error(
+      `Image deletion failed: ${error.message}`
+    );
+  }
 }

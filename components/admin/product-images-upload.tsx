@@ -1,22 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { v4 as uuid } from "uuid";
+import {
+  uploadProductImage,
+  deleteProductImage,
+} from "@/app/admin/actions";
 import { X } from "lucide-react";
 
 type Props = {
   mainImage?: string;
   galleryImages?: string[];
 };
-
-function getSafeFileName(file: File) {
-  const extension = file.name.includes(".")
-    ? file.name.split(".").pop()?.toLowerCase()
-    : "";
-
-  return `${uuid()}${extension ? `.${extension}` : ""}`;
-}
 
 function verifyImageLoads(url: string): Promise<boolean> {
   return new Promise((resolve) => {
@@ -58,32 +52,22 @@ export default function ProductImagesUpload({
     setUploading(true);
     setMainImageValid(false);
 
-    const fileName = getSafeFileName(file);
-
     try {
-      const { error } = await supabase.storage
-        .from("products")
-        .upload(fileName, file);
-
-      if (error) {
-        alert(`Image upload failed: ${error.message}`);
-        return;
-      }
-
-      const { data } = supabase.storage
-        .from("products")
-        .getPublicUrl(fileName);
-
-      const publicUrl = data.publicUrl;
+      const result = await uploadProductImage(file);
 
       const isValid = await verifyImageLoads(
-        publicUrl
+        result.publicUrl
       );
 
       if (!isValid) {
-        await supabase.storage
-          .from("products")
-          .remove([fileName]);
+        try {
+          await deleteProductImage(result.publicUrl);
+        } catch (cleanupError) {
+          console.error(
+            "Failed to clean up invalid image:",
+            cleanupError
+          );
+        }
 
         alert(
           "The image was uploaded but could not be displayed. The product was not updated."
@@ -92,17 +76,15 @@ export default function ProductImagesUpload({
         return;
       }
 
-      setImage(publicUrl);
+      setImage(result.publicUrl);
       setMainImageValid(true);
     } catch (error) {
       console.error(error);
 
-      await supabase.storage
-        .from("products")
-        .remove([fileName]);
-
       alert(
-        "Something went wrong while uploading the image."
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while uploading the image."
       );
     } finally {
       setUploading(false);
@@ -133,34 +115,24 @@ export default function ProductImagesUpload({
 
     try {
       for (const file of filesToUpload) {
-        const fileName = getSafeFileName(file);
-
         try {
-          const { error } = await supabase.storage
-            .from("products")
-            .upload(fileName, file);
-
-          if (error) {
-            alert(
-              `Gallery image upload failed: ${error.message}`
-            );
-            continue;
-          }
-
-          const { data } = supabase.storage
-            .from("products")
-            .getPublicUrl(fileName);
-
-          const publicUrl = data.publicUrl;
+          const result = await uploadProductImage(file);
 
           const isValid = await verifyImageLoads(
-            publicUrl
+            result.publicUrl
           );
 
           if (!isValid) {
-            await supabase.storage
-              .from("products")
-              .remove([fileName]);
+            try {
+              await deleteProductImage(
+                result.publicUrl
+              );
+            } catch (cleanupError) {
+              console.error(
+                "Failed to clean up invalid gallery image:",
+                cleanupError
+              );
+            }
 
             alert(
               "One gallery image could not be displayed and was not added."
@@ -169,16 +141,14 @@ export default function ProductImagesUpload({
             continue;
           }
 
-          uploadedImages.push(publicUrl);
+          uploadedImages.push(result.publicUrl);
         } catch (error) {
           console.error(error);
 
-          await supabase.storage
-            .from("products")
-            .remove([fileName]);
-
           alert(
-            "One gallery image could not be uploaded."
+            error instanceof Error
+              ? error.message
+              : "One gallery image could not be uploaded."
           );
         }
       }
@@ -303,11 +273,11 @@ export default function ProductImagesUpload({
         </p>
       )}
 
-      <input
-        type="hidden"
-        name="image"
-        value={mainImageValid ? image : ""}
-      />
+<input
+  type="hidden"
+  name="image"
+  value={image}
+/>
 
       <input
         type="hidden"

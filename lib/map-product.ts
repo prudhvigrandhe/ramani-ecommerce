@@ -31,6 +31,7 @@ type SupabaseProduct = {
   is_trending: boolean | null;
   is_best_seller: boolean | null;
   is_new_arrival: boolean | null;
+  is_published: boolean | null;
 
   categories?: {
     id: number;
@@ -73,6 +74,7 @@ export function mapProduct(product: SupabaseProduct): Product {
     is_trending: product.is_trending ?? false,
     is_best_seller: product.is_best_seller ?? false,
     is_new_arrival: product.is_new_arrival ?? false,
+    is_published: product.is_published ?? false,
 
     badge:
       product.original_price > product.price

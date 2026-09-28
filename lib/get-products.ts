@@ -10,6 +10,7 @@ export async function getProducts() {
       categories(name)
     `
     )
+    .eq("is_published", true)
     .order("id");
 
   if (error) {

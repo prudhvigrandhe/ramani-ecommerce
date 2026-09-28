@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { mapProduct } from "@/lib/map-product";
 
 const PAGE_SIZE = 10;
@@ -9,7 +9,7 @@ export async function getAdminProducts(page: number = 1) {
   const from = (safePage - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
-  const { data, error, count } = await supabase
+  const { data, error, count } = await supabaseAdmin
     .from("products")
     .select(
       `

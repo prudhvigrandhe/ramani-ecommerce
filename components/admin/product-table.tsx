@@ -1,8 +1,8 @@
 import Link from "next/link";
 import ProductRow from "./product-row";
+import DeleteProductButton from "./delete-product-button";
 import { getAdminProducts } from "@/lib/admin/get-admin-products";
-import { deleteProduct } from "@/app/admin/actions";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Eye } from "lucide-react";
 import Image from "next/image";
 
 type Props = {
@@ -41,6 +41,7 @@ export default async function ProductTable({ page }: Props) {
                 <th className="p-4 text-left">Category</th>
                 <th className="p-4 text-left">Price</th>
                 <th className="p-4 text-left">Rating</th>
+                <th className="p-4 text-left">Status</th>
                 <th className="p-4 text-left">Actions</th>
               </tr>
             </thead>
@@ -102,12 +103,40 @@ export default async function ProductTable({ page }: Props) {
                 <p className="mt-1 text-xs text-gray-500">
                   ⭐ {product.rating}
                 </p>
+
+                {/* Status */}
+
+                <div className="mt-2">
+                  {product.is_published ? (
+                    <span className="inline-block rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700">
+                      Published
+                    </span>
+                  ) : (
+                    <span className="inline-block rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-medium text-yellow-700">
+                      Draft
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
             {/* Actions */}
 
             <div className="mt-4 flex gap-2 border-t pt-3">
+              {/* Preview */}
+
+              {!product.is_published && (
+                <Link
+                  href={`/admin/preview-product/${product.id}`}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-purple-200 px-3 py-2.5 text-sm font-semibold text-purple-600 transition hover:bg-purple-50"
+                >
+                  <Eye className="h-4 w-4" />
+                  Preview
+                </Link>
+              )}
+
+              {/* Edit */}
+
               <Link
                 href={`/admin/edit-product/${product.id}`}
                 className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#5B214B] px-3 py-2.5 text-sm font-semibold text-[#5B214B] transition hover:bg-[#5B214B] hover:text-white"
@@ -116,21 +145,13 @@ export default async function ProductTable({ page }: Props) {
                 Edit
               </Link>
 
-              <form
-                action={async () => {
-                  "use server";
-                  await deleteProduct(product.id);
-                }}
-                className="flex-1"
-              >
-                <button
-                  type="submit"
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 px-3 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Delete
-                </button>
-              </form>
+              {/* Delete */}
+
+              <div className="flex-1">
+                <DeleteProductButton
+                  productId={product.id}
+                />
+              </div>
             </div>
           </div>
         ))}

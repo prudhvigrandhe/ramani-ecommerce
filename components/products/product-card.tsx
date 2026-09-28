@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+
 import Link from "next/link";
 import { ShoppingBag, Star, Eye } from "lucide-react";
 import { Product } from "@/lib/types";
@@ -108,13 +108,11 @@ export default function ProductCard({ product }: Props) {
         <div className="relative aspect-[3/4] overflow-hidden bg-gray-100 sm:aspect-[4/5]">
 
   {product.image ? (
-    <Image
-      src={product.image}
-      alt={product.name}
-      fill
-      sizes="(max-width:640px)50vw,(max-width:768px)50vw,25vw"
-      className="object-cover transition duration-500 group-hover:scale-105"
-    />
+    <img
+    src={product.image}
+    alt={product.name}
+    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+  />
   ) : (
     <div className="flex h-full items-center justify-center text-sm text-gray-400">
       No image

@@ -35,6 +35,8 @@ export type Product = {
   is_best_seller: boolean;
   is_new_arrival: boolean;
 
+  is_published: boolean;
+
   badge?: string;
 };
 
