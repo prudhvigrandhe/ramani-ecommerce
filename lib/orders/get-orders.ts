@@ -1,7 +1,7 @@
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export async function getOrders(search?: string) {
-  let query = supabase
+  let query = supabaseAdmin
     .from("orders")
     .select("*")
     .order("created_at", {

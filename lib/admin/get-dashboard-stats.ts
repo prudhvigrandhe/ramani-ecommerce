@@ -1,7 +1,7 @@
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export async function getDashboardStats() {
-  const { data: orders, error } = await supabase
+  const { data: orders, error } = await supabaseAdmin
     .from("orders")
     .select(
       "id, order_number, customer_name, total, payment_status, order_status, created_at"

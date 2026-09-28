@@ -1,6 +1,6 @@
 "use server";
 
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/admin/auth";
@@ -36,6 +36,12 @@ function isValidImageUrl(value: string) {
     return false;
   }
 
+  // Allow existing local/public images.
+  if (value.startsWith("/")) {
+    return value.length > 1;
+  }
+
+  // Allow externally hosted images only over HTTPS.
   try {
     const url = new URL(value);
 
@@ -169,7 +175,7 @@ export async function addProduct(formData: FormData) {
   const isNewArrival =
     formData.get("is_new_arrival") === "on";
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from("products")
     .insert({
       name,
@@ -217,7 +223,7 @@ export async function addProduct(formData: FormData) {
 export async function deleteProduct(id: number) {
   await requireAdmin();
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from("products")
     .delete()
     .eq("id", id);
@@ -312,7 +318,7 @@ export async function updateProduct(
   const isNewArrival =
     formData.get("is_new_arrival") === "on";
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from("products")
     .update({
       name,
