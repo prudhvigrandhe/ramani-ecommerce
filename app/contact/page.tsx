@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
     Mail,
     MapPin,
@@ -5,6 +6,24 @@ import {
     Clock,
     MessageCircle,
   } from "lucide-react";
+
+  export const metadata: Metadata = {
+    title: "Contact Us",
+    description:
+      "Contact Ramani for questions about orders, products, payments, shipping or other customer support.",
+    alternates: {
+      canonical: "/contact",
+    },
+    openGraph: {
+      title: "Contact Ramani",
+      description:
+        "Contact Ramani for questions about orders, products, payments, shipping or other customer support.",
+      url: "/contact",
+      siteName: "Ramani",
+      locale: "en_IN",
+      type: "website",
+    },
+  };
   
   export default function ContactPage() {
     return (

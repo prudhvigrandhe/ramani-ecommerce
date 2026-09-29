@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
+export const metadata: Metadata = {
+    title: "Terms & Conditions",
+    description:
+      "Read Ramani's Terms & Conditions covering products, orders, pricing, payments and order cancellation.",
+    alternates: {
+      canonical: "/terms",
+    },
+  };
 export default function TermsPage() {
   return (
     <main className="mx-auto max-w-4xl px-6 py-12">

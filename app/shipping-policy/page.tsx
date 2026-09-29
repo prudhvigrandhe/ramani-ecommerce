@@ -1,5 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
+
+export const metadata: Metadata = {
+    title: "Shipping Policy",
+    description:
+      "Read Ramani's Shipping Policy covering delivery across India, order processing, delivery times and shipping charges.",
+    alternates: {
+      canonical: "/shipping-policy",
+    },
+  };
+  
 export default function ShippingPolicyPage() {
   return (
     <main className="mx-auto max-w-4xl px-6 py-12">

@@ -15,6 +15,8 @@ export default function robots(): MetadataRoute.Robots {
         "/wishlist/",
         "/orders/",
         "/order-success/",
+        "/payment/",
+        "/test/",
       ],
     },
 

@@ -1,4 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+    title: "Cancellation & Refund Policy",
+    description:
+      "Read Ramani's Cancellation & Refund Policy, including order cancellation eligibility and online payment refunds.",
+    alternates: {
+      canonical: "/refund-policy",
+    },
+  };
 
 export default function RefundPolicyPage() {
   return (

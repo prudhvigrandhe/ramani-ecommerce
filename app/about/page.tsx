@@ -1,9 +1,28 @@
+import type { Metadata } from "next";
 import {
     Heart,
     ShieldCheck,
     Sparkles,
     Truck,
   } from "lucide-react";
+
+export const metadata: Metadata = {
+    title: "About Us",
+    description:
+      "Learn about Ramani and our mission to make stylish, comfortable and affordable women's fashion accessible across India.",
+    alternates: {
+      canonical: "/about",
+    },
+    openGraph: {
+      title: "About Ramani | Women's Fashion",
+      description:
+        "Learn about Ramani and our mission to make stylish, comfortable and affordable women's fashion accessible across India.",
+      url: "/about",
+      siteName: "Ramani",
+      locale: "en_IN",
+      type: "website",
+    },
+  };
   
   export default function AboutPage() {
     return (
