@@ -199,7 +199,8 @@ if (
         .select(
           "id, name, price, image, available_sizes, size_stock"
         )
-        .in("id", productIds);
+        .in("id", productIds)
+.eq("is_published", true);
 
     if (productsError) {
       console.error(

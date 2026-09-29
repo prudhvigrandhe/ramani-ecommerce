@@ -9,6 +9,7 @@ export function useProducts(
 ) {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const [search, setSearch] = useState(initialSearch);
   const [category, setCategory] =
@@ -26,12 +27,20 @@ export function useProducts(
   useEffect(() => {
     async function fetchProducts() {
       try {
+        setError("");
+
         const res = await fetch("/api/products");
+
+        if (!res.ok) {
+          throw new Error("Failed to load products.");
+        }
+
         const data: Product[] = await res.json();
 
         setAllProducts(data);
       } catch (err) {
         console.error(err);
+        setError("Unable to load products. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -98,6 +107,7 @@ export function useProducts(
   return {
     products: filteredProducts,
     loading,
+    error,
     search,
     setSearch,
     category,

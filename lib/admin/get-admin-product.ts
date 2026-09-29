@@ -1,8 +1,8 @@
-import { supabase } from "./supabase";
-import { mapProduct } from "./map-product";
+import { supabaseAdmin } from "@/lib/supabase-admin";
+import { mapProduct } from "@/lib/map-product";
 
-export async function getProduct(id: number) {
-  const { data, error } = await supabase
+export async function getAdminProduct(id: number) {
+  const { data, error } = await supabaseAdmin
     .from("products")
     .select(
       `
@@ -11,8 +11,7 @@ export async function getProduct(id: number) {
       `
     )
     .eq("id", id)
-.eq("is_published", true)
-.single();
+    .single();
 
   if (error || !data) {
     return null;

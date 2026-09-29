@@ -15,6 +15,8 @@ export default function ProductsClient({
 }: Props) {
   const {
     products,
+    loading,
+    error,
     search,
     setSearch,
     category,
@@ -38,20 +40,69 @@ export default function ProductsClient({
         </h1>
 
         <p className="mt-4 text-gray-600">
-          Showing {products.length} products
+          {loading
+            ? "Loading products..."
+            : error
+              ? "Unable to load products"
+              : `Showing ${products.length} products`}
         </p>
       </section>
 
-      <ProductToolbar
-        search={search}
-        setSearch={setSearch}
-        category={category}
-        setCategory={setCategory}
-        sort={sort}
-        setSort={setSort}
-      />
+      {!loading && !error && (
+        <ProductToolbar
+          search={search}
+          setSearch={setSearch}
+          category={category}
+          setCategory={setCategory}
+          sort={sort}
+          setSort={setSort}
+        />
+      )}
 
-      <ProductGrid products={products} />
+      {loading ? (
+        <section className="flex min-h-[300px] items-center justify-center">
+          <div className="text-center">
+            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-[#5B214B]" />
+            <p className="mt-4 text-gray-600">
+              Loading products...
+            </p>
+          </div>
+        </section>
+      ) : error ? (
+        <section className="flex min-h-[300px] items-center justify-center">
+          <div className="max-w-md text-center">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Unable to load products
+            </h2>
+
+            <p className="mt-2 text-gray-600">
+              Please try again in a moment.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="mt-5 rounded-xl bg-[#5B214B] px-5 py-3 font-semibold text-white transition hover:opacity-90"
+            >
+              Try Again
+            </button>
+          </div>
+        </section>
+      ) : products.length === 0 ? (
+        <section className="flex min-h-[300px] items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900">
+              No products found
+            </h2>
+
+            <p className="mt-2 text-gray-600">
+              Try changing your search or category.
+            </p>
+          </div>
+        </section>
+      ) : (
+        <ProductGrid products={products} />
+      )}
     </main>
   );
 }

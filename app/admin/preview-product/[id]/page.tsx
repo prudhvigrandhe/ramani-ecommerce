@@ -6,7 +6,7 @@ import ProductInfo from "@/components/products/product-info";
 import ProductBreadcrumb from "@/components/products/breadcrumb";
 import RelatedProducts from "@/components/products/related-products";
 
-import { getProduct } from "@/lib/get-product";
+import { getAdminProduct } from "@/lib/admin/get-admin-product";
 import { requireAdmin } from "@/lib/admin/auth";
 import PublishProductButton from "@/components/admin/publish-product-button";
 
@@ -23,7 +23,7 @@ export default async function PreviewProductPage({
 
   const { id } = await params;
 
-  const product = await getProduct(Number(id));
+  const product = await getAdminProduct(Number(id));
 
   if (!product) {
     notFound();
