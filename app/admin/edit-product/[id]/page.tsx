@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getCategories } from "@/lib/get-categories";
-import { getProduct } from "@/lib/get-product";
+import { getAdminProduct } from "@/lib/admin/get-admin-product";
 import EditProductForm from "@/components/admin/edit-product-form";
 import ProductPreviewCard from "@/components/admin/product-preview-card";
 
@@ -15,7 +15,7 @@ export default async function EditProductPage({
 }: Props) {
   const { id } = await params;
 
-  const product = await getProduct(Number(id));
+  const product = await getAdminProduct(Number(id));
 
   if (!product) {
     notFound();
