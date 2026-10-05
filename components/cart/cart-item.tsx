@@ -53,7 +53,7 @@ export default function CartItemCard({
           src={item.image}
           alt={item.name}
           fill
-          className="object-cover transition-transform hover:scale-105"
+          className="object-contain transition-transform hover:scale-105"
         />
       </Link>
 

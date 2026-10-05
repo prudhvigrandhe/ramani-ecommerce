@@ -41,6 +41,8 @@ type CartStore = {
     }[]
   ) => void;
 
+  syncProducts: (products: Product[]) => void;
+
   clearCart: () => void;
 
   totalItems: () => number;
@@ -272,6 +274,36 @@ export const useCartStore = create<CartStore>()(
                   item.size === cartItem.size
               )
           ),
+        });
+      },
+
+      syncProducts: (products) => {
+        const latestProducts = new Map(
+          products.map((product) => [
+            product.id,
+            product,
+          ])
+        );
+      
+        const updatedItems = get().items.map(
+          (item) => {
+            const latestProduct =
+              latestProducts.get(item.id);
+      
+            if (!latestProduct) {
+              return item;
+            }
+      
+            return {
+              ...latestProduct,
+              quantity: item.quantity,
+              size: item.size,
+            };
+          }
+        );
+      
+        set({
+          items: updatedItems,
         });
       },
 

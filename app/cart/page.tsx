@@ -1,12 +1,62 @@
 "use client";
 
+import { useEffect } from "react";
+
 import CartItemCard from "@/components/cart/cart-item";
 import CartSummary from "@/components/cart/cart-summary";
 import EmptyCart from "@/components/cart/empty-cart";
 import { useCartStore } from "@/store/cart-store";
+import { getProduct } from "@/lib/get-product";
 
 export default function CartPage() {
-  const items = useCartStore((state) => state.items);
+  const items = useCartStore(
+    (state) => state.items
+  );
+
+  const syncProducts = useCartStore(
+    (state) => state.syncProducts
+  );
+
+  useEffect(() => {
+    if (items.length === 0) {
+      return;
+    }
+
+    const productIds = [
+      ...new Set(
+        items.map((item) => item.id)
+      ),
+    ];
+
+    let cancelled = false;
+
+    async function syncCartProducts() {
+      const products = await Promise.all(
+        productIds.map((id) => getProduct(id))
+      );
+
+      if (cancelled) {
+        return;
+      }
+
+      const availableProducts =
+        products.filter(
+          (product): product is NonNullable<
+            typeof product
+          > => product !== null
+        );
+
+      if (availableProducts.length > 0) {
+        syncProducts(availableProducts);
+      }
+    }
+
+    syncCartProducts();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [items, syncProducts]);
 
   if (items.length === 0) {
     return <EmptyCart />;
@@ -25,7 +75,6 @@ export default function CartPage() {
       </div>
 
       <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
-
         <div className="space-y-6">
           {items.map((item) => (
             <CartItemCard
@@ -36,7 +85,6 @@ export default function CartPage() {
         </div>
 
         <CartSummary />
-
       </div>
     </main>
   );

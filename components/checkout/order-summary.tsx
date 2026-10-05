@@ -21,7 +21,7 @@ export default function CheckoutOrderSummary() {
   const total = displayedSubtotal + shipping + tax;
 
   return (
-    <div className="sticky top-24 rounded-2xl border bg-white p-6 shadow-sm">
+    <div className="rounded-2xl border bg-white p-6 shadow-sm">
       <h2 className="mb-6 text-2xl font-bold">
         Order Summary
       </h2>
