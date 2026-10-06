@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import heic2any from "heic2any";
 import {
   uploadProductImage,
   deleteProductImage,
@@ -44,6 +43,8 @@ async function prepareImageFile(file: File): Promise<File> {
   if (!isHeic) {
     return file;
   }
+
+  const { default: heic2any } = await import("heic2any");
 
   const converted = await heic2any({
     blob: file,
