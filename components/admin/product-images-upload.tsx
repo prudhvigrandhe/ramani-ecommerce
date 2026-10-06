@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import heic2any from "heic2any";
 import {
   uploadProductImage,
   deleteProductImage,
@@ -28,6 +29,45 @@ function verifyImageLoads(url: string): Promise<boolean> {
   });
 }
 
+async function prepareImageFile(file: File): Promise<File> {
+  const extension = file.name
+    .split(".")
+    .pop()
+    ?.toLowerCase();
+
+  const isHeic =
+    extension === "heic" ||
+    extension === "heif" ||
+    file.type === "image/heic" ||
+    file.type === "image/heif";
+
+  if (!isHeic) {
+    return file;
+  }
+
+  const converted = await heic2any({
+    blob: file,
+    toType: "image/jpeg",
+    quality: 0.9,
+  });
+
+  const convertedBlob = Array.isArray(converted)
+    ? converted[0]
+    : converted;
+
+  const newFileName =
+    file.name.replace(/\.(heic|heif)$/i, "") +
+    ".jpg";
+
+  return new File(
+    [convertedBlob],
+    newFileName,
+    {
+      type: "image/jpeg",
+    }
+  );
+}
+
 export default function ProductImagesUpload({
   mainImage = "",
   galleryImages = [],
@@ -53,7 +93,10 @@ export default function ProductImagesUpload({
     setMainImageValid(false);
 
     try {
-      const result = await uploadProductImage(file);
+      const preparedFile = await prepareImageFile(file);
+
+      const result =
+        await uploadProductImage(preparedFile);
 
       const isValid = await verifyImageLoads(
         result.publicUrl
@@ -61,7 +104,9 @@ export default function ProductImagesUpload({
 
       if (!isValid) {
         try {
-          await deleteProductImage(result.publicUrl);
+          await deleteProductImage(
+            result.publicUrl
+          );
         } catch (cleanupError) {
           console.error(
             "Failed to clean up invalid image:",
@@ -116,11 +161,18 @@ export default function ProductImagesUpload({
     try {
       for (const file of filesToUpload) {
         try {
-          const result = await uploadProductImage(file);
+          const preparedFile =
+            await prepareImageFile(file);
 
-          const isValid = await verifyImageLoads(
-            result.publicUrl
-          );
+          const result =
+            await uploadProductImage(
+              preparedFile
+            );
+
+          const isValid =
+            await verifyImageLoads(
+              result.publicUrl
+            );
 
           if (!isValid) {
             try {
@@ -141,7 +193,9 @@ export default function ProductImagesUpload({
             continue;
           }
 
-          uploadedImages.push(result.publicUrl);
+          uploadedImages.push(
+            result.publicUrl
+          );
         } catch (error) {
           console.error(error);
 
@@ -184,7 +238,7 @@ export default function ProductImagesUpload({
 
         <input
           type="file"
-          accept="image/*"
+          accept="image/*,.heic,.heif"
           onChange={uploadMainImage}
           disabled={uploading}
         />
@@ -234,7 +288,7 @@ export default function ProductImagesUpload({
         {images.length < 3 && (
           <input
             type="file"
-            accept="image/*"
+            accept="image/*,.heic,.heif"
             multiple
             onChange={uploadGalleryImages}
             disabled={uploading}
@@ -269,15 +323,15 @@ export default function ProductImagesUpload({
 
       {uploading && (
         <p className="text-sm text-gray-500">
-          Uploading and verifying image...
+          Converting/uploading and verifying image...
         </p>
       )}
 
-<input
-  type="hidden"
-  name="image"
-  value={image}
-/>
+      <input
+        type="hidden"
+        name="image"
+        value={image}
+      />
 
       <input
         type="hidden"
