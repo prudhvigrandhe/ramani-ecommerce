@@ -28,23 +28,12 @@ function verifyImageLoads(url: string): Promise<boolean> {
   });
 }
 
-async function prepareImageFile(file: File): Promise<File> {
-  const extension = file.name
-    .split(".")
-    .pop()
-    ?.toLowerCase();
-
-  const isHeic =
-    extension === "heic" ||
-    extension === "heif" ||
-    file.type === "image/heic" ||
-    file.type === "image/heif";
-
-  if (!isHeic) {
-    return file;
-  }
-
-  const { default: heic2any } = await import("heic2any");
+async function convertHeicToJpeg(
+  file: File
+): Promise<File> {
+  const { default: heic2any } = await import(
+    "heic2any"
+  );
 
   const converted = await heic2any({
     blob: file,
@@ -67,6 +56,143 @@ async function prepareImageFile(file: File): Promise<File> {
       type: "image/jpeg",
     }
   );
+}
+
+function loadImage(
+  file: File
+): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+
+    const objectUrl = URL.createObjectURL(file);
+
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(image);
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(
+        new Error(
+          "The selected image could not be read."
+        )
+      );
+    };
+
+    image.src = objectUrl;
+  });
+}
+
+async function optimizeImage(
+  file: File
+): Promise<File> {
+  const extension = file.name
+    .split(".")
+    .pop()
+    ?.toLowerCase();
+
+  const isHeic =
+    extension === "heic" ||
+    extension === "heif" ||
+    file.type === "image/heic" ||
+    file.type === "image/heif";
+
+  let preparedFile = file;
+
+  // Convert HEIC/HEIF to JPEG first.
+  if (isHeic) {
+    preparedFile = await convertHeicToJpeg(file);
+  }
+
+  const preparedExtension = preparedFile.name
+    .split(".")
+    .pop()
+    ?.toLowerCase();
+
+  // Keep GIF files unchanged so animated GIFs are preserved.
+  if (
+    preparedExtension === "gif" ||
+    preparedFile.type === "image/gif"
+  ) {
+    return preparedFile;
+  }
+
+  const image = await loadImage(preparedFile);
+
+  const maxDimension = 1600;
+
+  let width = image.naturalWidth;
+  let height = image.naturalHeight;
+
+  if (
+    width > maxDimension ||
+    height > maxDimension
+  ) {
+    const scale = Math.min(
+      maxDimension / width,
+      maxDimension / height
+    );
+
+    width = Math.round(width * scale);
+    height = Math.round(height * scale);
+  }
+
+  const canvas = document.createElement("canvas");
+
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error(
+      "Could not prepare the image for upload."
+    );
+  }
+
+  context.drawImage(
+    image,
+    0,
+    0,
+    width,
+    height
+  );
+
+  const blob = await new Promise<Blob | null>(
+    (resolve) => {
+      canvas.toBlob(
+        resolve,
+        "image/webp",
+        0.82
+      );
+    }
+  );
+
+  if (!blob) {
+    throw new Error(
+      "Could not compress the image."
+    );
+  }
+
+  const baseName = preparedFile.name.replace(
+    /\.[^/.]+$/,
+    ""
+  );
+
+  return new File(
+    [blob],
+    `${baseName}.webp`,
+    {
+      type: "image/webp",
+    }
+  );
+}
+
+async function prepareImageFile(
+  file: File
+): Promise<File> {
+  return optimizeImage(file);
 }
 
 export default function ProductImagesUpload({
@@ -94,10 +220,13 @@ export default function ProductImagesUpload({
     setMainImageValid(false);
 
     try {
-      const preparedFile = await prepareImageFile(file);
+      const preparedFile =
+        await prepareImageFile(file);
 
       const result =
-        await uploadProductImage(preparedFile);
+        await uploadProductImage(
+          preparedFile
+        );
 
       const isValid = await verifyImageLoads(
         result.publicUrl
@@ -141,7 +270,9 @@ export default function ProductImagesUpload({
   async function uploadGalleryImages(
     e: React.ChangeEvent<HTMLInputElement>
   ) {
-    const files = Array.from(e.target.files ?? []);
+    const files = Array.from(
+      e.target.files ?? []
+    );
 
     if (!files.length) return;
 
@@ -153,7 +284,10 @@ export default function ProductImagesUpload({
       return;
     }
 
-    const filesToUpload = files.slice(0, remaining);
+    const filesToUpload = files.slice(
+      0,
+      remaining
+    );
 
     setUploading(true);
 
@@ -217,14 +351,15 @@ export default function ProductImagesUpload({
     } finally {
       setUploading(false);
 
-      // Allows selecting the same files again later.
       e.target.value = "";
     }
   }
 
   function removeGalleryImage(index: number) {
     setImages((previous) =>
-      previous.filter((_, i) => i !== index)
+      previous.filter(
+        (_, i) => i !== index
+      )
     );
   }
 
@@ -324,7 +459,7 @@ export default function ProductImagesUpload({
 
       {uploading && (
         <p className="text-sm text-gray-500">
-          Converting/uploading and verifying image...
+          Preparing and uploading image...
         </p>
       )}
 
