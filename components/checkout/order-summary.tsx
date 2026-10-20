@@ -16,9 +16,13 @@ export default function CheckoutOrderSummary() {
   const displayedItems = hydrated ? totalItems : 0;
   const displayedSubtotal = hydrated ? subtotal : 0;
 
-  const shipping = 0;
-  const tax = 0;
-  const total = displayedSubtotal + shipping + tax;
+  const shipping =
+  displayedSubtotal < 1999 ? 100 : 0;
+
+const tax = 0;
+
+const total =
+  displayedSubtotal + shipping + tax;
 
   return (
     <div className="rounded-2xl border bg-white p-6 shadow-sm">
@@ -38,11 +42,18 @@ export default function CheckoutOrderSummary() {
         </div>
 
         <div className="flex justify-between">
-          <span>Shipping</span>
-          <span className="text-green-600">
-            FREE
-          </span>
-        </div>
+  <span>Shipping</span>
+
+  {shipping === 0 ? (
+    <span className="text-green-600">
+      FREE
+    </span>
+  ) : (
+    <span>
+      ₹{shipping}
+    </span>
+  )}
+</div>
 
         <hr />
 

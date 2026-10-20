@@ -351,11 +351,11 @@ if (
     }
 
     /*
-     * 8. Calculate final order amount.
-     */
-    const shipping = 0;
-    const tax = 0;
-    const total = subtotal + shipping + tax;
+ * 8. Calculate final order amount.
+ */
+const shipping = subtotal < 1999 ? 100 : 0;
+const tax = 0;
+const total = subtotal + shipping + tax;
 
     if (total <= 0) {
       return NextResponse.json(

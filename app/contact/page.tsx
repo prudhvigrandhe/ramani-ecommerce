@@ -65,7 +65,7 @@ import {
                   </h3>
   
                   <p className="text-gray-600">
-                    +91 98765 43210
+                    +91 7330682554
                   </p>
                 </div>
               </div>
@@ -81,7 +81,7 @@ import {
                   </h3>
   
                   <p className="text-gray-600">
-                    support@ramani.in
+                    ramaniclothing04@gmail.com
                   </p>
                 </div>
               </div>

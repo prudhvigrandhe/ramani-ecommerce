@@ -7,6 +7,9 @@ export default function CartSummary() {
   const totalItems = useCartStore((state) => state.totalItems());
   const totalPrice = useCartStore((state) => state.totalPrice());
 
+  const shipping = totalPrice < 1999 ? 100 : 0;
+  const total = totalPrice + shipping;
+
   return (
     <div className="sticky top-24 rounded-2xl border bg-white p-6 shadow-sm">
       <h2 className="mb-6 text-2xl font-bold">
@@ -14,7 +17,6 @@ export default function CartSummary() {
       </h2>
 
       <div className="space-y-4">
-
         <div className="flex justify-between">
           <span>Items</span>
           <span>{totalItems}</span>
@@ -27,18 +29,22 @@ export default function CartSummary() {
 
         <div className="flex justify-between">
           <span>Shipping</span>
-          <span className="text-green-600">
-            FREE
-          </span>
+
+          {shipping === 0 ? (
+            <span className="text-green-600">
+              FREE
+            </span>
+          ) : (
+            <span>₹{shipping}</span>
+          )}
         </div>
 
         <hr />
 
         <div className="flex justify-between text-xl font-bold">
           <span>Total</span>
-          <span>₹{totalPrice}</span>
+          <span>₹{total}</span>
         </div>
-
       </div>
 
       <Link

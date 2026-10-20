@@ -9,7 +9,7 @@ import {
     {
       icon: Truck,
       title: "Free Shipping",
-      description: "Free delivery on orders above ₹999.",
+      description: "Free delivery on orders above ₹1999.",
     },
     {
       icon: ShieldCheck,

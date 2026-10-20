@@ -7,7 +7,7 @@ type Props = {
   sizeStock: Record<string, number>;
 };
 
-const ALL_SIZES = ["XS", "S", "M", "L", "XL"];
+const ALL_SIZES = ["XS", "S", "M", "L", "XL","XXL"];
 
 export default function SizeSelector({
   sizes,

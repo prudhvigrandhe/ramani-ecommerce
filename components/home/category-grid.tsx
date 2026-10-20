@@ -4,15 +4,15 @@ import Link from "next/link";
 const categories = [
   {
     title: "Dresses",
-    image: "/images/categories/dresses.png",
+    image: "/images/categories/Dress.jpeg",
   },
   {
     title: "Sarees",
-    image: "/images/categories/sarees.png",
+    image: "/images/categories/Saree.jpeg",
   },
   {
     title: "Kurtas",
-    image: "/images/categories/kurtas.png",
+    image: "/images/categories/Kurta.PNG",
   },
   {
     title: "Tops",

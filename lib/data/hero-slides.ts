@@ -5,7 +5,7 @@ export const heroSlides = [
       subtitle: "Elegance for Every Celebration",
       description:
         "Discover handpicked ethnic and western wear crafted to make every moment special.",
-      image: "/images/hero/hero-banner.png",
+      image: "/images/banners/banner.jpeg",
       button: "Shop Now",
     },
     {
@@ -14,7 +14,7 @@ export const heroSlides = [
       subtitle: "Style Meets Comfort",
       description:
         "Premium quality outfits designed for everyday confidence and effortless elegance.",
-      image: "/images/banners/festival-banner.png",
+      image: "/images/banners/banner.jpeg",
       button: "Explore Collection",
     },
     {
@@ -23,7 +23,7 @@ export const heroSlides = [
       subtitle: "Limited Time Sale",
       description:
         "Grab your favorite styles at amazing prices before they're gone.",
-      image: "/images/banners/sale-banner.png",
+      image: "/images/banners/banner.jpeg",
       button: "Shop Sale",
     },
   ];

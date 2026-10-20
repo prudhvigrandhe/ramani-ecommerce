@@ -2,9 +2,7 @@
 
 import { useState } from "react";
 import {
-  Heart,
   ShoppingBag,
-  Star,
   Truck,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -13,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { Product } from "@/lib/types";
 import SizeSelector from "./size-selector";
 import { useCartStore } from "@/store/cart-store";
+import WishlistButton from "@/components/ui/wishlist-button";
 
 type Props = {
   product: Product;
@@ -121,15 +120,7 @@ const [size, setSize] = useState(firstAvailableSize);
           {product.name}
         </h1>
 
-        <div className="mt-5 flex items-center gap-2">
-          <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-
-          <span>{product.rating}</span>
-
-          <span className="text-gray-400">
-            (142 Reviews)
-          </span>
-        </div>
+        
       </div>
 
       {/* Price */}
@@ -214,13 +205,10 @@ const [size, setSize] = useState(firstAvailableSize);
             : "Out of Stock"}
         </button>
 
-        <button
-          type="button"
-          className="rounded-xl border px-4 transition hover:bg-gray-100 sm:px-5"
-          aria-label="Add to wishlist"
-        >
-          <Heart className="h-6 w-6" />
-        </button>
+        <WishlistButton
+  product={product}
+  className="h-auto w-auto rounded-xl border px-4 shadow-none sm:px-5"
+/>
 
       </div>
 

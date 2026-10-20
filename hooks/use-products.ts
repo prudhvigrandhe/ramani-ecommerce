@@ -13,7 +13,7 @@ export function useProducts(
 
   const [search, setSearch] = useState(initialSearch);
   const [category, setCategory] =
-    useState(initialCategory);
+  useState(initialCategory);
   const [sort, setSort] = useState("Newest");
 
   useEffect(() => {
@@ -69,10 +69,11 @@ export function useProducts(
       );
     }
 
-    if (category !== "All") {
+    if (category.toLowerCase() !== "all") {
       data = data.filter(
         (product) =>
-          product.category === category
+          product.category.toLowerCase() ===
+          category.toLowerCase()
       );
     }
 
